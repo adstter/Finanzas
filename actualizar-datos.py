@@ -16,6 +16,9 @@ Luego hacer commit y push a GitHub:
 import json
 import os
 import subprocess
+import re
+
+MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
 try:
     import openpyxl
@@ -35,6 +38,83 @@ def get_mensual(sheet, row_num):
 def get_total(sheet, row_num):
     """Extrae total anual (columna P)"""
     return float(sheet.cell(row=row_num, column=16).value or 0)
+
+def cargar_ventas_actuales():
+    """Carga las ventas de productos actuales desde datos-presupuesto.js"""
+    try:
+        with open(OUTPUT_PATH, 'r', encoding='utf-8') as f:
+            contenido = f.read()
+            # Buscar ventasProductos en el archivo
+            match = re.search(r'"ventasProductos":\s*\[([^\]]+)\]', contenido)
+            if match:
+                valores = match.group(1).split(',')
+                return [float(v.strip()) for v in valores]
+    except:
+        pass
+    return [0] * 12
+
+def solicitar_ventas():
+    """Solicita al usuario los valores de ventas de productos"""
+    print("\n" + "=" * 50)
+    print("VENTAS DE PRODUCTOS PROYECTADAS")
+    print("=" * 50)
+
+    ventas_actuales = cargar_ventas_actuales()
+    total_actual = sum(ventas_actuales)
+
+    print(f"\nValores actuales de ventas:")
+    for i, mes in enumerate(MESES):
+        print(f"  {mes}: Q {ventas_actuales[i]:,.2f}")
+    print(f"  Total Anual: Q {total_actual:,.2f}")
+
+    print("\nOpciones:")
+    print("  1. Mantener valores actuales")
+    print("  2. Establecer un valor igual para todos los meses")
+    print("  3. Ingresar valor por cada mes")
+
+    opcion = input("\nSelecciona una opcion (1/2/3): ").strip()
+
+    if opcion == '1':
+        print("Manteniendo valores actuales.")
+        return ventas_actuales
+
+    elif opcion == '2':
+        while True:
+            try:
+                valor = input("\nIngresa el valor mensual para todos los meses: Q ").strip().replace(',', '')
+                valor = float(valor)
+                ventas = [valor] * 12
+                print(f"\nTotal anual: Q {sum(ventas):,.2f}")
+                confirmar = input("Confirmar? (s/n): ").strip().lower()
+                if confirmar == 's':
+                    return ventas
+            except ValueError:
+                print("Por favor ingresa un numero valido.")
+
+    elif opcion == '3':
+        ventas = []
+        print("\nIngresa el valor de ventas para cada mes:")
+        for i, mes in enumerate(MESES):
+            while True:
+                try:
+                    valor_default = ventas_actuales[i]
+                    valor = input(f"  {mes} (actual: Q {valor_default:,.2f}): Q ").strip().replace(',', '')
+                    if valor == '':
+                        valor = valor_default
+                    else:
+                        valor = float(valor)
+                    ventas.append(valor)
+                    break
+                except ValueError:
+                    print("    Por favor ingresa un numero valido.")
+        print(f"\nTotal anual: Q {sum(ventas):,.2f}")
+        confirmar = input("Confirmar? (s/n): ").strip().lower()
+        if confirmar == 's':
+            return ventas
+        else:
+            return ventas_actuales
+
+    return ventas_actuales
 
 def main():
     print("=" * 50)
@@ -178,6 +258,11 @@ def main():
     )
     datos['gastos'].sort(key=lambda x: x['total'], reverse=True)
 
+    # Solicitar ventas de productos
+    ventas_productos = solicitar_ventas()
+    datos['ventasProductos'] = ventas_productos
+    datos['margenProductos'] = 0.30  # 30% margen bruto
+
     # Guardar archivo JS
     print(f"\nGuardando: {OUTPUT_PATH}")
     with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
@@ -190,12 +275,22 @@ def main():
     print("\n" + "=" * 50)
     print("DATOS ACTUALIZADOS EXITOSAMENTE")
     print("=" * 50)
-    print(f"\nResumen:")
+    print(f"\nResumen Ingresos Recurrentes:")
     print(f"  Ingresos Totales: Q {datos['ingresos']['totalAnual']:,.2f}")
     print(f"  Costos Directos:  Q {datos['costos']['totalAnual']:,.2f}")
     print(f"  Margen Bruto:     {datos['margenBruto']['porcentaje']:.1f}%")
     print(f"  OPEX Total:       Q {datos['opex']['totalAnual']:,.2f}")
     print(f"  Resultado Neto:   Q {datos['resultado']['anual']:,.2f}")
+
+    total_ventas = sum(datos['ventasProductos'])
+    margen_ventas = total_ventas * datos['margenProductos']
+    print(f"\nVentas de Productos:")
+    print(f"  Ventas Totales:   Q {total_ventas:,.2f}")
+    print(f"  Margen (30%):     Q {margen_ventas:,.2f}")
+
+    print(f"\nConsolidado:")
+    print(f"  Ingresos Totales: Q {datos['ingresos']['totalAnual'] + total_ventas:,.2f}")
+    print(f"  Resultado Final:  Q {datos['resultado']['anual'] + margen_ventas:,.2f}")
 
     print("\n" + "-" * 50)
     print("Para publicar los cambios, ejecuta:")
