@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presupuesto 2026 - Dashboard Ejecutivo</title>
+    <link rel="stylesheet" href="presupuesto-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div>
+                <h1>Presupuesto 2026</h1>
+                <p class="header-subtitle">Dashboard Ejecutivo para Accionistas</p>
+                <p class="header-moneda">Cifras expresadas en Quetzales (GTQ)</p>
+            </div>
+            <div class="last-update" id="lastUpdate">
+                Sin datos cargados
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Zona de Carga -->
+        <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">&#128200;</div>
+            <h3>Cargar Presupuesto Excel</h3>
+            <p>Arrastra el archivo "Presupuesto 2026.xlsx" aqui o haz clic para seleccionar</p>
+            <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+        </div>
+
+        <!-- Navegacion por Secciones -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-section="all">Vista Completa</button>
+            <button class="nav-tab" data-section="kpis">KPIs</button>
+            <button class="nav-tab" data-section="pl">Estado de Resultados</button>
+            <button class="nav-tab" data-section="ventas">Ventas Productos</button>
+            <button class="nav-tab" data-section="pl-consolidado">P&L Consolidado</button>
+            <button class="nav-tab" data-section="ingresos">Ingresos Recurrentes</button>
+            <button class="nav-tab" data-section="costos">Costos</button>
+            <button class="nav-tab" data-section="opex">OPEX</button>
+            <button class="nav-tab" data-section="rankings">Rankings</button>
+        </nav>
+
+        <!-- KPIs Dashboard Ejecutivo -->
+        <section id="section-kpis" class="fade-in">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Ingresos Totales</div>
+                    <div class="kpi-value" id="kpi-ingresos">Q 0.00</div>
+                    <div class="kpi-change">Proyectado 2026</div>
+                </div>
+                <div class="kpi-card success">
+                    <div class="kpi-label">Margen Bruto</div>
+                    <div class="kpi-value" id="kpi-margen-bruto">0%</div>
+                    <div class="kpi-change" id="kpi-margen-bruto-monto">Q 0.00</div>
+                </div>
+                <div class="kpi-card info">
+                    <div class="kpi-label">Total Costos</div>
+                    <div class="kpi-value" id="kpi-costos">Q 0.00</div>
+                    <div class="kpi-change">Costos directos</div>
+                </div>
+                <div class="kpi-card warning">
+                    <div class="kpi-label">Gastos Operativos</div>
+                    <div class="kpi-value" id="kpi-opex">Q 0.00</div>
+                    <div class="kpi-change">OPEX Total</div>
+                </div>
+                <div class="kpi-card" id="kpi-resultado-card">
+                    <div class="kpi-label">Resultado Neto</div>
+                    <div class="kpi-value" id="kpi-resultado">Q 0.00</div>
+                    <div class="kpi-change" id="kpi-margen-operativo">Margen: 0%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Estado de Resultados (P&L) -->
+        <section id="section-pl" class="section fade-in">
+            <div class="section-header">
+                <h2>Estado de Resultados Proyectado 2026 (P&L)</h2>
+                <div>
+                    <button class="btn-toggle active" id="btn-pl-resumido" onclick="togglePL('resumido')">Resumido</button>
+                    <button class="btn-toggle" id="btn-pl-detallado" onclick="togglePL('detallado')">Detallado</button>
+                </div>
+            </div>
+            <div class="section-body">
+                <!-- Vista Resumida -->
+                <div id="pl-resumido" class="pl-view">
+                    <div class="table-container">
+                        <table class="data-table" id="tabla-pl-resumido">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th class="number">Ene</th>
+                                    <th class="number">Feb</th>
+                                    <th class="number">Mar</th>
+                                    <th class="number">Abr</th>
+                                    <th class="number">May</th>
+                                    <th class="number">Jun</th>
+                                    <th class="number">Jul</th>
+                                    <th class="number">Ago</th>
+                                    <th class="number">Sep</th>
+                                    <th class="number">Oct</th>
+                                    <th class="number">Nov</th>
+                                    <th class="number">Dic</th>
+                                    <th class="number">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pl-body-resumido">
+                                <!-- Se llena dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="content-grid" style="margin-top: 20px;">
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: var(--dark-color);">Distribucion Anual</h4>
+                            <div class="chart-container small">
+                                <canvas id="chart-pl-pie"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: var(--dark-color);">Resultado Mensual</h4>
+                            <div class="chart-container small">
+                                <canvas id="chart-pl-line"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vista Detallada -->
+                <div id="pl-detallado" class="pl-view" style="display: none;">
+                    <div class="table-container" style="max-height: 600px; overflow-y: auto;">
+                        <table class="data-table" id="tabla-pl-detallado">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 250px;">Concepto</th>
+                                    <th class="number">Ene</th>
+                                    <th class="number">Feb</th>
+                                    <th class="number">Mar</th>
+                                    <th class="number">Abr</th>
+                                    <th class="number">May</th>
+                                    <th class="number">Jun</th>
+                                    <th class="number">Jul</th>
+                                    <th class="number">Ago</th>
+                                    <th class="number">Sep</th>
+                                    <th class="number">Oct</th>
+                                    <th class="number">Nov</th>
+                                    <th class="number">Dic</th>
+                                    <th class="number">Total Anual</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pl-body-detallado">
+                                <!-- Se llena dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ventas de Productos Proyectados -->
+        <section id="section-ventas" class="section fade-in">
+            <div class="section-header">
+                <h2>Ventas de Productos Proyectados</h2>
+                <span class="badge">Margen 30%</span>
+            </div>
+            <div class="section-body">
+                <div class="alert-info" style="background: #dbeafe; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="margin: 0; color: #1e40af;">Ingrese las ventas proyectadas de productos por mes. El costo de ventas se calcula automaticamente con un margen bruto del 30%.</p>
+                </div>
+                <h4 style="margin-bottom: 15px; color: var(--dark-color);">Proyeccion de Ventas Mensuales</h4>
+                <div class="table-container">
+                    <table class="data-table" id="tabla-ventas">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th class="number">Ene</th>
+                                <th class="number">Feb</th>
+                                <th class="number">Mar</th>
+                                <th class="number">Abr</th>
+                                <th class="number">May</th>
+                                <th class="number">Jun</th>
+                                <th class="number">Jul</th>
+                                <th class="number">Ago</th>
+                                <th class="number">Sep</th>
+                                <th class="number">Oct</th>
+                                <th class="number">Nov</th>
+                                <th class="number">Dic</th>
+                                <th class="number">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Ventas Productos</strong></td>
+                                <td class="number"><input type="number" class="input-ventas" id="venta-0" value="0" min="0" step="100"></td>
+                                <td class="number"><input type="number" class="input-ventas" id="venta-1" value="0" min="0" step="100"></td>
+                                <td class="number"><input type="number" class="input-ventas" id="venta-2" value="0" min="0" step="100"></td>
+                                <td class="number"><input type="number" class="input-ventas" id="venta-3" value="0" min="0" step="100"></td>
+                                <td class="number"><input type="number" class="input-ventas" id="venta-4" value="0" min="0" step="100"></td>
+                                <td class="number"><input type="number" class="input-ventas" id="venta-5" value="0" min="0" step="100"></td>
+                                <td class="number"><input type="number" class="input-ventas" id="venta-6" value="0" min="0" step="100"></td>
+                                <td class="number"><input type="number" class="input-ventas" id="venta-7" value="0" min="0" step="100"></td>
+                                <td class="number"><input type="number" class="input-ventas" id="venta-8" value="0" min="0" step="100"></td>
+                                <td class="number"><input type="number" class="input-ventas" id="venta-9" value="0" min="0" step="100"></td>
+                                <td class="number"><input type="number" class="input-ventas" id="venta-10" value="0" min="0" step="100"></td>
+                                <td class="number"><input type="number" class="input-ventas" id="venta-11" value="0" min="0" step="100"></td>
+                                <td class="number"><strong id="total-ventas">0.00</strong></td>
+                            </tr>
+                            <tr style="background: #fee2e2;">
+                                <td>(-) Costo de Ventas (70%)</td>
+                                <td class="number" id="costo-0">0.00</td>
+                                <td class="number" id="costo-1">0.00</td>
+                                <td class="number" id="costo-2">0.00</td>
+                                <td class="number" id="costo-3">0.00</td>
+                                <td class="number" id="costo-4">0.00</td>
+                                <td class="number" id="costo-5">0.00</td>
+                                <td class="number" id="costo-6">0.00</td>
+                                <td class="number" id="costo-7">0.00</td>
+                                <td class="number" id="costo-8">0.00</td>
+                                <td class="number" id="costo-9">0.00</td>
+                                <td class="number" id="costo-10">0.00</td>
+                                <td class="number" id="costo-11">0.00</td>
+                                <td class="number"><strong id="total-costo-ventas">0.00</strong></td>
+                            </tr>
+                            <tr style="background: #dcfce7; font-weight: 600;">
+                                <td>(=) Margen Bruto Productos (30%)</td>
+                                <td class="number" id="margen-prod-0">0.00</td>
+                                <td class="number" id="margen-prod-1">0.00</td>
+                                <td class="number" id="margen-prod-2">0.00</td>
+                                <td class="number" id="margen-prod-3">0.00</td>
+                                <td class="number" id="margen-prod-4">0.00</td>
+                                <td class="number" id="margen-prod-5">0.00</td>
+                                <td class="number" id="margen-prod-6">0.00</td>
+                                <td class="number" id="margen-prod-7">0.00</td>
+                                <td class="number" id="margen-prod-8">0.00</td>
+                                <td class="number" id="margen-prod-9">0.00</td>
+                                <td class="number" id="margen-prod-10">0.00</td>
+                                <td class="number" id="margen-prod-11">0.00</td>
+                                <td class="number"><strong id="total-margen-productos">0.00</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="content-grid" style="margin-top: 20px;">
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Distribucion Ventas</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-ventas-pie"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Ventas Mensuales</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-ventas-line"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Estado de Resultados Consolidado -->
+        <section id="section-pl-consolidado" class="section fade-in">
+            <div class="section-header">
+                <h2>Estado de Resultados Consolidado 2026</h2>
+                <span class="badge" id="badge-resultado-consolidado">Resultado: 0.00</span>
+            </div>
+            <div class="section-body">
+                <div class="table-container">
+                    <table class="data-table" id="tabla-pl-consolidado">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th class="number">Ene</th>
+                                <th class="number">Feb</th>
+                                <th class="number">Mar</th>
+                                <th class="number">Abr</th>
+                                <th class="number">May</th>
+                                <th class="number">Jun</th>
+                                <th class="number">Jul</th>
+                                <th class="number">Ago</th>
+                                <th class="number">Sep</th>
+                                <th class="number">Oct</th>
+                                <th class="number">Nov</th>
+                                <th class="number">Dic</th>
+                                <th class="number">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pl-consolidado-body">
+                            <!-- Se llena dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="content-grid" style="margin-top: 20px;">
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Composicion de Ingresos</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-consolidado-pie"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Resultado Consolidado Mensual</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-consolidado-line"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Presupuesto de Ingresos Recurrentes -->
+        <section id="section-ingresos" class="section fade-in">
+            <div class="section-header">
+                <h2>Presupuesto de Ingresos Recurrentes</h2>
+                <span class="badge" id="badge-clientes">0 clientes</span>
+            </div>
+            <div class="section-body">
+                <!-- Tabla de Clientes -->
+                <h4 style="margin-bottom: 15px; color: var(--dark-color);">Listado de Clientes e Ingresos Proyectados</h4>
+                <div class="table-container" style="max-height: 500px; overflow-y: auto; margin-bottom: 25px;">
+                    <table class="data-table" id="tabla-clientes">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Cliente</th>
+                                <th class="number">Ene</th>
+                                <th class="number">Feb</th>
+                                <th class="number">Mar</th>
+                                <th class="number">Abr</th>
+                                <th class="number">May</th>
+                                <th class="number">Jun</th>
+                                <th class="number">Jul</th>
+                                <th class="number">Ago</th>
+                                <th class="number">Sep</th>
+                                <th class="number">Oct</th>
+                                <th class="number">Nov</th>
+                                <th class="number">Dic</th>
+                                <th class="number">Total Anual</th>
+                                <th class="number">%</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientes-body">
+                            <!-- Se llena dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Graficos -->
+                <div class="content-grid" style="margin-top: 20px;">
+                    <div class="chart-container">
+                        <canvas id="chart-ingresos-pie"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-ingresos-bar"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analisis de Costos y Margen Bruto -->
+        <section id="section-costos" class="section fade-in">
+            <div class="section-header">
+                <h2>Analisis de Costos y Margen Bruto</h2>
+                <span class="badge" id="badge-margen">Margen: 0%</span>
+            </div>
+            <div class="section-body">
+                <h4 style="margin-bottom: 15px; color: var(--dark-color);">Desglose de Costos Directos</h4>
+                <table class="data-table" id="tabla-costos">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th class="number">Monto Anual</th>
+                            <th class="number">% del Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="costos-body">
+                        <!-- Se llena dinamicamente -->
+                    </tbody>
+                </table>
+                <div class="content-grid" style="margin-top: 20px;">
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Por Categoria</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-costos-pie"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Costos Mensuales</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-costos-line"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gastos Operativos (OPEX) -->
+        <section id="section-opex" class="section fade-in">
+            <div class="section-header">
+                <h2>Presupuesto de Gastos Operativos (OPEX)</h2>
+                <span class="badge" id="badge-opex">Q 0.00</span>
+            </div>
+            <div class="section-body">
+                <div class="content-grid">
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Por Categoria</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-opex-categoria"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Detalle Mensual</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-opex-mensual"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px; color: var(--dark-color);">Detalle de Gastos Operativos</h4>
+                    <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                        <table class="data-table" id="tabla-opex">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Categoria</th>
+                                    <th class="number">Monto Anual</th>
+                                    <th class="number">Mensual Prom.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="opex-body">
+                                <!-- Se llena dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rankings: Top Clientes y Top Gastos -->
+        <section id="section-rankings" class="section fade-in">
+            <div class="section-header">
+                <h2>Principales Clientes y Mayores Gastos</h2>
+                <span class="badge">Top 10</span>
+            </div>
+            <div class="section-body">
+                <div class="content-grid">
+                    <!-- Top Clientes -->
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">&#127942; Top 10 Clientes por Ingreso</h4>
+                        <ul class="ranking-list" id="ranking-clientes">
+                            <!-- Se llena dinamicamente -->
+                        </ul>
+                    </div>
+                    <!-- Top Gastos -->
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">&#128200; Top 10 Mayores Gastos</h4>
+                        <ul class="ranking-list" id="ranking-gastos">
+                            <!-- Se llena dinamicamente -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="presupuesto-script.js"></script>
+</body>
+</html>
