@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presupuesto 2026 - Dashboard Ejecutivo</title>
+    <link rel="stylesheet" href="presupuesto-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="datos-presupuesto.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div>
+                <h1>Presupuesto 2026</h1>
+                <p class="header-subtitle">Dashboard Ejecutivo para Accionistas</p>
+                <p class="header-moneda">Cifras expresadas en Quetzales (GTQ)</p>
+            </div>
+            <div class="last-update" id="lastUpdate">
+                Vista de solo lectura
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Navegacion por Secciones -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-section="all">Vista Completa</button>
+            <button class="nav-tab" data-section="kpis">KPIs</button>
+            <button class="nav-tab" data-section="pl">Estado de Resultados</button>
+            <button class="nav-tab" data-section="ingresos">Ingresos</button>
+            <button class="nav-tab" data-section="costos">Costos</button>
+            <button class="nav-tab" data-section="opex">OPEX</button>
+            <button class="nav-tab" data-section="rankings">Rankings</button>
+        </nav>
+
+        <!-- KPIs Dashboard Ejecutivo -->
+        <section id="section-kpis" class="fade-in">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Ingresos Totales</div>
+                    <div class="kpi-value" id="kpi-ingresos">Q 0.00</div>
+                    <div class="kpi-change">Proyectado 2026</div>
+                </div>
+                <div class="kpi-card success">
+                    <div class="kpi-label">Margen Bruto</div>
+                    <div class="kpi-value" id="kpi-margen-bruto">0%</div>
+                    <div class="kpi-change" id="kpi-margen-bruto-monto">Q 0.00</div>
+                </div>
+                <div class="kpi-card info">
+                    <div class="kpi-label">Total Costos</div>
+                    <div class="kpi-value" id="kpi-costos">Q 0.00</div>
+                    <div class="kpi-change">Costos directos</div>
+                </div>
+                <div class="kpi-card warning">
+                    <div class="kpi-label">Gastos Operativos</div>
+                    <div class="kpi-value" id="kpi-opex">Q 0.00</div>
+                    <div class="kpi-change">OPEX Total</div>
+                </div>
+                <div class="kpi-card" id="kpi-resultado-card">
+                    <div class="kpi-label">Resultado Neto</div>
+                    <div class="kpi-value" id="kpi-resultado">Q 0.00</div>
+                    <div class="kpi-change" id="kpi-margen-operativo">Margen: 0%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Estado de Resultados (P&L) -->
+        <section id="section-pl" class="section fade-in">
+            <div class="section-header">
+                <h2>Estado de Resultados Proyectado 2026 (P&L)</h2>
+            </div>
+            <div class="section-body">
+                <div class="table-container">
+                    <table class="data-table" id="tabla-pl-resumido">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th class="number">Ene</th>
+                                <th class="number">Feb</th>
+                                <th class="number">Mar</th>
+                                <th class="number">Abr</th>
+                                <th class="number">May</th>
+                                <th class="number">Jun</th>
+                                <th class="number">Jul</th>
+                                <th class="number">Ago</th>
+                                <th class="number">Sep</th>
+                                <th class="number">Oct</th>
+                                <th class="number">Nov</th>
+                                <th class="number">Dic</th>
+                                <th class="number">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pl-body-resumido">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="content-grid" style="margin-top: 20px;">
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Distribucion Anual</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-pl-pie"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Resultado Mensual</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-pl-line"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Presupuesto de Ingresos -->
+        <section id="section-ingresos" class="section fade-in">
+            <div class="section-header">
+                <h2>Presupuesto de Ingresos (Revenue Breakdown)</h2>
+                <span class="badge" id="badge-clientes">0 clientes</span>
+            </div>
+            <div class="section-body">
+                <h4 style="margin-bottom: 15px; color: var(--dark-color);">Listado de Clientes e Ingresos Proyectados</h4>
+                <div class="table-container" style="max-height: 500px; overflow-y: auto; margin-bottom: 25px;">
+                    <table class="data-table" id="tabla-clientes">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Cliente</th>
+                                <th class="number">Ene</th>
+                                <th class="number">Feb</th>
+                                <th class="number">Mar</th>
+                                <th class="number">Abr</th>
+                                <th class="number">May</th>
+                                <th class="number">Jun</th>
+                                <th class="number">Jul</th>
+                                <th class="number">Ago</th>
+                                <th class="number">Sep</th>
+                                <th class="number">Oct</th>
+                                <th class="number">Nov</th>
+                                <th class="number">Dic</th>
+                                <th class="number">Total Anual</th>
+                                <th class="number">%</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientes-body">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="content-grid" style="margin-top: 20px;">
+                    <div class="chart-container">
+                        <canvas id="chart-ingresos-pie"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-ingresos-bar"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analisis de Costos y Margen Bruto -->
+        <section id="section-costos" class="section fade-in">
+            <div class="section-header">
+                <h2>Analisis de Costos y Margen Bruto</h2>
+                <span class="badge" id="badge-margen">Margen: 0%</span>
+            </div>
+            <div class="section-body">
+                <h4 style="margin-bottom: 15px; color: var(--dark-color);">Desglose de Costos Directos</h4>
+                <table class="data-table" id="tabla-costos">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th class="number">Monto Anual</th>
+                            <th class="number">% del Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="costos-body">
+                    </tbody>
+                </table>
+                <div class="content-grid" style="margin-top: 20px;">
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Por Categoria</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-costos-pie"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Costos Mensuales</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-costos-line"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gastos Operativos (OPEX) -->
+        <section id="section-opex" class="section fade-in">
+            <div class="section-header">
+                <h2>Presupuesto de Gastos Operativos (OPEX)</h2>
+                <span class="badge" id="badge-opex">Q 0.00</span>
+            </div>
+            <div class="section-body">
+                <div class="content-grid">
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Por Categoria</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-opex-categoria"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Detalle Mensual</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-opex-mensual"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px; color: var(--dark-color);">Detalle de Gastos Operativos</h4>
+                    <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                        <table class="data-table" id="tabla-opex">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Categoria</th>
+                                    <th class="number">Monto Anual</th>
+                                    <th class="number">Mensual Prom.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="opex-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rankings: Top Clientes y Top Gastos -->
+        <section id="section-rankings" class="section fade-in">
+            <div class="section-header">
+                <h2>Principales Clientes y Mayores Gastos</h2>
+                <span class="badge">Top 10</span>
+            </div>
+            <div class="section-body">
+                <div class="content-grid">
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">&#127942; Top 10 Clientes por Ingreso</h4>
+                        <ul class="ranking-list" id="ranking-clientes">
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">&#128200; Top 10 Mayores Gastos</h4>
+                        <ul class="ranking-list" id="ranking-gastos">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Variables globales
+        let datosPresupuesto = DATOS_PRESUPUESTO;
+        let charts = {};
+
+        const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+        const COLORES = {
+            primario: '#1e3a8a',
+            secundario: '#3b82f6',
+            exito: '#10b981',
+            peligro: '#ef4444',
+            advertencia: '#f59e0b',
+            info: '#06b6d4',
+            gris: '#6b7280',
+            palette: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1']
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            inicializarNavegacion();
+            renderizarDashboard();
+        });
+
+        function renderizarDashboard() {
+            renderizarKPIs();
+            renderizarPL();
+            renderizarIngresos();
+            renderizarCostos();
+            renderizarOPEX();
+            renderizarRankings();
+        }
+
+        function renderizarKPIs() {
+            const d = datosPresupuesto;
+            document.getElementById('kpi-ingresos').textContent = formatoMoneda(d.ingresos.totalAnual);
+            document.getElementById('kpi-margen-bruto').textContent = d.margenBruto.porcentaje.toFixed(1) + '%';
+            document.getElementById('kpi-margen-bruto-monto').textContent = formatoMoneda(d.margenBruto.anual);
+            document.getElementById('kpi-costos').textContent = formatoMoneda(d.costos.totalAnual);
+            document.getElementById('kpi-opex').textContent = formatoMoneda(d.opex.totalAnual);
+            document.getElementById('kpi-resultado').textContent = formatoMoneda(d.resultado.anual);
+            document.getElementById('kpi-margen-operativo').textContent = 'Margen: ' + d.resultado.margenOperativo.toFixed(1) + '%';
+
+            const resultadoCard = document.getElementById('kpi-resultado-card');
+            if (d.resultado.anual >= 0) {
+                resultadoCard.classList.remove('danger');
+                resultadoCard.classList.add('success');
+            } else {
+                resultadoCard.classList.remove('success');
+                resultadoCard.classList.add('danger');
+            }
+        }
+
+        function renderizarPL() {
+            const d = datosPresupuesto;
+            const tbodyResumido = document.getElementById('pl-body-resumido');
+            const filasResumidas = [
+                { concepto: '(+) Ingresos Totales', datos: d.ingresos.totalMensual, total: d.ingresos.totalAnual, clase: '' },
+                { concepto: '(-) Costos Directos', datos: d.costos.totalMensual, total: d.costos.totalAnual, clase: '' },
+                { concepto: '(=) Margen Bruto', datos: d.margenBruto.mensual, total: d.margenBruto.anual, clase: 'subtotal-row' },
+                { concepto: '(-) Gastos Operativos (OPEX)', datos: d.opex.totalMensual, total: d.opex.totalAnual, clase: '' },
+                { concepto: '(=) Resultado Neto', datos: d.resultado.mensual, total: d.resultado.anual, clase: 'total-row' }
+            ];
+
+            tbodyResumido.innerHTML = filasResumidas.map(f => `
+                <tr class="${f.clase}">
+                    <td><strong>${f.concepto}</strong></td>
+                    ${f.datos.map(v => `<td class="number ${v < 0 ? 'negative' : ''}">${formatoMonedaCorto(v)}</td>`).join('')}
+                    <td class="number"><strong>${formatoMonedaCorto(f.total)}</strong></td>
+                </tr>
+            `).join('');
+
+            // Graficos
+            const ctxPie = document.getElementById('chart-pl-pie').getContext('2d');
+            charts.plPie = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ingresos', 'Costos Directos', 'OPEX'],
+                    datasets: [{
+                        data: [d.ingresos.totalAnual, d.costos.totalAnual, d.opex.totalAnual],
+                        backgroundColor: [COLORES.exito, COLORES.peligro, COLORES.advertencia]
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            const ctxLine = document.getElementById('chart-pl-line').getContext('2d');
+            charts.plLine = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: MESES,
+                    datasets: [{
+                        label: 'Resultado Mensual',
+                        data: d.resultado.mensual,
+                        borderColor: COLORES.advertencia,
+                        backgroundColor: COLORES.advertencia + '20',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: value => value.toLocaleString('es-GT') } } } }
+            });
+        }
+
+        function renderizarIngresos() {
+            const d = datosPresupuesto;
+            document.getElementById('badge-clientes').textContent = d.ingresos.clientes.length + ' clientes';
+
+            const tbodyClientes = document.getElementById('clientes-body');
+            let htmlClientes = '';
+            d.ingresos.clientes.forEach((cliente, index) => {
+                const porcentaje = (cliente.total / d.ingresos.totalAnual * 100).toFixed(2);
+                htmlClientes += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${cliente.nombre}</td>
+                        ${cliente.mensual.map(v => `<td class="number">${formatoDecimal(v)}</td>`).join('')}
+                        <td class="number"><strong>${formatoDecimal(cliente.total)}</strong></td>
+                        <td class="number">${porcentaje}%</td>
+                    </tr>
+                `;
+            });
+            htmlClientes += `
+                <tr class="total-row">
+                    <td colspan="2"><strong>TOTAL</strong></td>
+                    ${d.ingresos.totalMensual.map(v => `<td class="number"><strong>${formatoDecimal(v)}</strong></td>`).join('')}
+                    <td class="number"><strong>${formatoDecimal(d.ingresos.totalAnual)}</strong></td>
+                    <td class="number"><strong>100%</strong></td>
+                </tr>
+            `;
+            tbodyClientes.innerHTML = htmlClientes;
+
+            // Graficos
+            const top10 = d.ingresos.clientes.slice(0, 10);
+            const otros = d.ingresos.clientes.slice(10);
+            const otrosTotal = otros.reduce((sum, c) => sum + c.total, 0);
+
+            const pieData = [...top10.map(c => c.total)];
+            const pieLabels = [...top10.map(c => c.nombre.substring(0, 20))];
+            if (otrosTotal > 0) {
+                pieData.push(otrosTotal);
+                pieLabels.push('Otros (' + otros.length + ')');
+            }
+
+            const ctxPie = document.getElementById('chart-ingresos-pie').getContext('2d');
+            charts.ingresosPie = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: COLORES.palette.concat(['#9ca3af']) }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Distribucion por Cliente' }, legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } } }
+            });
+
+            const ctxBar = document.getElementById('chart-ingresos-bar').getContext('2d');
+            charts.ingresosBar = new Chart(ctxBar, {
+                type: 'line',
+                data: { labels: MESES, datasets: [{ label: 'Ingresos Mensuales', data: d.ingresos.totalMensual, borderColor: COLORES.advertencia, backgroundColor: COLORES.advertencia + '20', fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: value => value.toLocaleString('es-GT') } } } }
+            });
+        }
+
+        function renderizarCostos() {
+            const d = datosPresupuesto;
+            document.getElementById('badge-margen').textContent = 'Margen: ' + d.margenBruto.porcentaje.toFixed(1) + '%';
+
+            const tbody = document.getElementById('costos-body');
+            tbody.innerHTML = d.costos.detalle.map(c => `
+                <tr>
+                    <td>${c.nombre}</td>
+                    <td class="number">${formatoMoneda(c.total)}</td>
+                    <td class="number">${(c.total / d.costos.totalAnual * 100).toFixed(1)}%</td>
+                </tr>
+            `).join('') + `
+                <tr class="total-row">
+                    <td><strong>Total Costos</strong></td>
+                    <td class="number"><strong>${formatoMoneda(d.costos.totalAnual)}</strong></td>
+                    <td class="number"><strong>100%</strong></td>
+                </tr>
+            `;
+
+            const ctxPie = document.getElementById('chart-costos-pie').getContext('2d');
+            charts.costosPie = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: { labels: d.costos.detalle.map(c => c.nombre), datasets: [{ data: d.costos.detalle.map(c => c.total), backgroundColor: [COLORES.peligro, COLORES.advertencia, COLORES.info] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            const ctxLine = document.getElementById('chart-costos-line').getContext('2d');
+            charts.costosLine = new Chart(ctxLine, {
+                type: 'line',
+                data: { labels: MESES, datasets: [{ label: 'Costos Mensuales', data: d.costos.totalMensual, borderColor: COLORES.advertencia, backgroundColor: COLORES.advertencia + '20', fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: value => value.toLocaleString('es-GT') } } } }
+            });
+        }
+
+        function renderizarOPEX() {
+            const d = datosPresupuesto;
+            document.getElementById('badge-opex').textContent = formatoMoneda(d.opex.totalAnual);
+
+            const totalConsultores = d.opex.consultores.reduce((s, g) => s + g.total, 0);
+            const totalSoftware = d.opex.software.reduce((s, g) => s + g.total, 0);
+            const totalOtros = d.opex.otros.reduce((s, g) => s + g.total, 0);
+
+            const ctxCat = document.getElementById('chart-opex-categoria').getContext('2d');
+            charts.opexCategoria = new Chart(ctxCat, {
+                type: 'doughnut',
+                data: { labels: ['Consultores', 'Software', 'Otros'], datasets: [{ data: [totalConsultores, totalSoftware, totalOtros], backgroundColor: [COLORES.primario, COLORES.secundario, COLORES.advertencia] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            const ctxMensual = document.getElementById('chart-opex-mensual').getContext('2d');
+            charts.opexMensual = new Chart(ctxMensual, {
+                type: 'line',
+                data: { labels: MESES, datasets: [{ label: 'OPEX Mensual', data: d.opex.totalMensual, borderColor: COLORES.advertencia, backgroundColor: COLORES.advertencia + '20', fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: value => value.toLocaleString('es-GT') } } } }
+            });
+
+            const tbody = document.getElementById('opex-body');
+            const todosOPEX = [...d.opex.consultores, ...d.opex.software, ...d.opex.otros].sort((a, b) => b.total - a.total);
+            tbody.innerHTML = todosOPEX.map(g => `
+                <tr>
+                    <td>${g.nombre}</td>
+                    <td>${g.categoria}</td>
+                    <td class="number">${formatoMoneda(g.total)}</td>
+                    <td class="number">${formatoMoneda(g.total / 12)}</td>
+                </tr>
+            `).join('') + `
+                <tr class="total-row">
+                    <td colspan="2"><strong>Total OPEX</strong></td>
+                    <td class="number"><strong>${formatoMoneda(d.opex.totalAnual)}</strong></td>
+                    <td class="number"><strong>${formatoMoneda(d.opex.totalAnual / 12)}</strong></td>
+                </tr>
+            `;
+        }
+
+        function renderizarRankings() {
+            const d = datosPresupuesto;
+
+            const listaClientes = document.getElementById('ranking-clientes');
+            const top10Clientes = d.ingresos.clientes.slice(0, 10);
+            const maxCliente = top10Clientes[0]?.total || 1;
+
+            listaClientes.innerHTML = top10Clientes.map((c, i) => `
+                <li class="ranking-item">
+                    <span class="ranking-position ${i < 3 ? 'top-3' : ''}">${i + 1}</span>
+                    <div class="ranking-info">
+                        <div class="ranking-name">${c.nombre}</div>
+                        <div class="ranking-bar">
+                            <div class="ranking-bar-fill" style="width: ${(c.total / maxCliente * 100)}%"></div>
+                        </div>
+                    </div>
+                    <div class="ranking-value">
+                        ${formatoMonedaCorto(c.total)}
+                        <div class="ranking-percent">${(c.total / d.ingresos.totalAnual * 100).toFixed(1)}%</div>
+                    </div>
+                </li>
+            `).join('');
+
+            const listaGastos = document.getElementById('ranking-gastos');
+            const top10Gastos = d.gastos.slice(0, 10);
+            const maxGasto = top10Gastos[0]?.total || 1;
+            const totalGastos = d.costos.totalAnual + d.opex.totalAnual;
+
+            listaGastos.innerHTML = top10Gastos.map((g, i) => `
+                <li class="ranking-item">
+                    <span class="ranking-position ${i < 3 ? 'top-3' : ''}">${i + 1}</span>
+                    <div class="ranking-info">
+                        <div class="ranking-name">${g.nombre}</div>
+                        <div class="ranking-bar">
+                            <div class="ranking-bar-fill" style="width: ${(g.total / maxGasto * 100)}%; background: linear-gradient(90deg, ${COLORES.peligro}, ${COLORES.advertencia});"></div>
+                        </div>
+                    </div>
+                    <div class="ranking-value">
+                        ${formatoMonedaCorto(g.total)}
+                        <div class="ranking-percent">${(g.total / totalGastos * 100).toFixed(1)}%</div>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        function inicializarNavegacion() {
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const section = tab.dataset.section;
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    const secciones = {
+                        'all': ['kpis', 'pl', 'ingresos', 'costos', 'opex', 'rankings'],
+                        'kpis': ['kpis'],
+                        'pl': ['pl'],
+                        'ingresos': ['ingresos'],
+                        'costos': ['costos'],
+                        'opex': ['opex'],
+                        'rankings': ['rankings']
+                    };
+
+                    const visibles = secciones[section] || secciones['all'];
+                    document.querySelectorAll('[id^="section-"]').forEach(sec => {
+                        const id = sec.id.replace('section-', '');
+                        sec.style.display = visibles.includes(id) ? 'block' : 'none';
+                    });
+                });
+            });
+        }
+
+        function formatoMoneda(valor) {
+            return valor.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function formatoMonedaCorto(valor) {
+            return valor.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function formatoDecimal(valor) {
+            if (valor === 0 || valor === null || valor === undefined) return '0.00';
+            return valor.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    </script>
+</body>
+</html>
