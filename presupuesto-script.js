@@ -298,14 +298,14 @@ function extraerDatos(data) {
         agregarGastoOPEX(resultado.opex.otros, data, i, 'Otros');
     }
 
-    // Total OPEX / Gastos de Explotacion (fila 122)
-    resultado.opex.totalMensual = extraerMensual(data, 122);
-    resultado.opex.totalAnual = parseFloat(data[122]?.[15]) || sumar(resultado.opex.totalMensual);
+    // Total OPEX / Gastos de Explotacion (fila 122 en Excel = indice 121)
+    resultado.opex.totalMensual = extraerMensual(data, 121);
+    resultado.opex.totalAnual = parseFloat(data[121]?.[15]) || sumar(resultado.opex.totalMensual);
     console.log('Total OPEX:', resultado.opex.totalAnual);
 
-    // Resultado (fila 151)
-    resultado.resultado.mensual = extraerMensual(data, 151);
-    resultado.resultado.anual = parseFloat(data[151]?.[15]) || sumar(resultado.resultado.mensual);
+    // Resultado (fila 151 en Excel = indice 150)
+    resultado.resultado.mensual = extraerMensual(data, 150);
+    resultado.resultado.anual = parseFloat(data[150]?.[15]) || sumar(resultado.resultado.mensual);
     resultado.resultado.margenOperativo = resultado.ingresos.totalAnual > 0
         ? (resultado.resultado.anual / resultado.ingresos.totalAnual * 100)
         : 0;
