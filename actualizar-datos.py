@@ -178,12 +178,12 @@ def main():
             'consultores': [],
             'software': [],
             'otros': [],
-            'totalMensual': get_mensual(sheet, 123),
-            'totalAnual': get_total(sheet, 123)
+            'totalMensual': get_mensual(sheet, 122),
+            'totalAnual': get_total(sheet, 122)
         },
         'resultado': {
-            'mensual': get_mensual(sheet, 152),
-            'anual': get_total(sheet, 152),
+            'mensual': get_mensual(sheet, 151),
+            'anual': get_total(sheet, 151),
             'margenOperativo': 0
         },
         'gastos': []

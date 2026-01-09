@@ -1,4 +1,5 @@
 // Datos del Presupuesto 2026 - Generado automaticamente
+// Ultima actualizacion: 2026-01-09 17:33:19
 const DATOS_PRESUPUESTO = {
   "ingresos": {
     "clientes": [
@@ -1133,25 +1134,6 @@ const DATOS_PRESUPUESTO = {
         "total": 16848.0
       },
       {
-        "nombre": "CLAUDE.AI SUBSCRIPTION US",
-        "categoria": "Software",
-        "mensual": [
-          1950.0,
-          1950.0,
-          1950.0,
-          1950.0,
-          1950.0,
-          1950.0,
-          1950.0,
-          1950.0,
-          1950.0,
-          1950.0,
-          1950.0,
-          1950.0
-        ],
-        "total": 23400.0
-      },
-      {
         "nombre": "CLARO TELEFONIA",
         "categoria": "Software",
         "mensual": [
@@ -1171,7 +1153,7 @@ const DATOS_PRESUPUESTO = {
         "total": 11214.634285714283
       },
       {
-        "nombre": "Proyectos de Tecnologia",
+        "nombre": "Proyectos de Tecnologia- Entrenamiento Ventas",
         "categoria": "Software",
         "mensual": [
           280.8,
@@ -1270,19 +1252,19 @@ const DATOS_PRESUPUESTO = {
         "categoria": "Software",
         "mensual": [
           1911.0,
-          1911.0,
-          1911.0,
-          1911.0,
-          1911.0,
-          1911.0,
-          1911.0,
-          1911.0,
-          1911.0,
-          1911.0,
-          1911.0,
-          1911.0
+          15368.496,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
         ],
-        "total": 22932.0
+        "total": 17279.496
       },
       {
         "nombre": "ZOHO-SITES SG",
@@ -1382,25 +1364,6 @@ const DATOS_PRESUPUESTO = {
     ],
     "otros": [
       {
-        "nombre": "Cuotas de IGSS Personal",
-        "categoria": "Otros",
-        "mensual": [
-          633.5,
-          633.5,
-          633.5,
-          633.5,
-          633.5,
-          633.5,
-          633.5,
-          633.5,
-          633.5,
-          633.5,
-          633.5,
-          633.5
-        ],
-        "total": 7602.0
-      },
-      {
         "nombre": "Seguro de Accidentes Empleados",
         "categoria": "Otros",
         "mensual": [
@@ -1418,25 +1381,6 @@ const DATOS_PRESUPUESTO = {
           142.86
         ],
         "total": 1714.3200000000006
-      },
-      {
-        "nombre": "Gastos Operación México",
-        "categoria": "Otros",
-        "mensual": [
-          700.0,
-          700.0,
-          700.0,
-          700.0,
-          700.0,
-          700.0,
-          700.0,
-          700.0,
-          700.0,
-          700.0,
-          700.0,
-          700.0
-        ],
-        "total": 8400.0
       },
       {
         "nombre": "Gastos Financieros (Intereses Linea de Crédito)",
@@ -1497,38 +1441,38 @@ const DATOS_PRESUPUESTO = {
       }
     ],
     "totalMensual": [
-      77391.35846114285,
-      75141.35846114285,
-      75141.35846114285,
-      75141.35846114285,
-      75141.35846114285,
-      75141.35846114285,
-      75141.35846114285,
-      75141.35846114285,
-      76821.35846114285,
-      75491.35846114285,
-      75141.35846114285,
-      75141.35846114285
+      74741.35846114285,
+      85948.85446114285,
+      70580.35846114285,
+      70580.35846114285,
+      70580.35846114285,
+      70580.35846114285,
+      70580.35846114285,
+      70580.35846114285,
+      72260.35846114285,
+      70930.35846114285,
+      70580.35846114285,
+      70580.35846114285
     ],
-    "totalAnual": 905976.3015337144
+    "totalAnual": 868523.7975337143
   },
   "resultado": {
     "mensual": [
-      6653.753398714238,
-      5739.603398714244,
-      5740.4533987142495,
-      6632.731970142835,
-      22730.50347871425,
-      7132.401798714243,
-      6770.2293987142475,
-      8633.199398714249,
-      5385.529718714242,
-      9466.85299871424,
-      9857.158678714244,
-      6138.103398714244
+      9303.753398714238,
+      -5067.8926012857555,
+      10301.45339871425,
+      11193.731970142835,
+      27291.50347871425,
+      11693.401798714243,
+      11331.229398714248,
+      13194.199398714249,
+      9946.529718714242,
+      14027.85299871424,
+      14418.158678714244,
+      10699.103398714244
     ],
-    "anual": 100880.52103599953,
-    "margenOperativo": 8.274705723302702
+    "anual": 138333.02503599954,
+    "margenOperativo": 11.346740304589467
   },
   "gastos": [
     {
@@ -1684,44 +1628,6 @@ const DATOS_PRESUPUESTO = {
       "nombre": "CLAUDE.AI SUBSCRIPTION US",
       "categoria": "Software",
       "mensual": [
-        1950.0,
-        1950.0,
-        1950.0,
-        1950.0,
-        1950.0,
-        1950.0,
-        1950.0,
-        1950.0,
-        1950.0,
-        1950.0,
-        1950.0,
-        1950.0
-      ],
-      "total": 23400.0
-    },
-    {
-      "nombre": "ZOHO-ONE SG",
-      "categoria": "Software",
-      "mensual": [
-        1911.0,
-        1911.0,
-        1911.0,
-        1911.0,
-        1911.0,
-        1911.0,
-        1911.0,
-        1911.0,
-        1911.0,
-        1911.0,
-        1911.0,
-        1911.0
-      ],
-      "total": 22932.0
-    },
-    {
-      "nombre": "CLAUDE.AI SUBSCRIPTION US",
-      "categoria": "Software",
-      "mensual": [
         1560.0,
         1560.0,
         1560.0,
@@ -1736,6 +1642,25 @@ const DATOS_PRESUPUESTO = {
         1560.0
       ],
       "total": 18720.0
+    },
+    {
+      "nombre": "ZOHO-ONE SG",
+      "categoria": "Software",
+      "mensual": [
+        1911.0,
+        15368.496,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "total": 17279.496
     },
     {
       "nombre": "OPENAI *CHATGPT SUBSCR US",
@@ -1774,44 +1699,6 @@ const DATOS_PRESUPUESTO = {
         934.552857142857
       ],
       "total": 11214.634285714283
-    },
-    {
-      "nombre": "Gastos Operación México",
-      "categoria": "Otros",
-      "mensual": [
-        700.0,
-        700.0,
-        700.0,
-        700.0,
-        700.0,
-        700.0,
-        700.0,
-        700.0,
-        700.0,
-        700.0,
-        700.0,
-        700.0
-      ],
-      "total": 8400.0
-    },
-    {
-      "nombre": "Cuotas de IGSS Personal",
-      "categoria": "Otros",
-      "mensual": [
-        633.5,
-        633.5,
-        633.5,
-        633.5,
-        633.5,
-        633.5,
-        633.5,
-        633.5,
-        633.5,
-        633.5,
-        633.5,
-        633.5
-      ],
-      "total": 7602.0
     },
     {
       "nombre": "Mensajeria",
@@ -1890,7 +1777,7 @@ const DATOS_PRESUPUESTO = {
       "total": 3880.6559999999995
     },
     {
-      "nombre": "Proyectos de Tecnologia",
+      "nombre": "Proyectos de Tecnologia- Entrenamiento Ventas",
       "categoria": "Software",
       "mensual": [
         280.8,
@@ -2137,6 +2024,19 @@ const DATOS_PRESUPUESTO = {
       "total": 350.0
     }
   ],
-  "ventasProductos": [14250, 14250, 14250, 14250, 14250, 14250, 14250, 14250, 14250, 14250, 14250, 14250],
-  "margenProductos": 0.30
+  "ventasProductos": [
+    14250,
+    14250,
+    14250,
+    14250,
+    14250,
+    14250,
+    14250,
+    14250,
+    14250,
+    14250,
+    14250,
+    14250
+  ],
+  "margenProductos": 0.3
 };
