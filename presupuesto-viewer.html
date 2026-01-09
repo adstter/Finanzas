@@ -29,7 +29,9 @@
             <button class="nav-tab active" data-section="all">Vista Completa</button>
             <button class="nav-tab" data-section="kpis">KPIs</button>
             <button class="nav-tab" data-section="pl">Estado de Resultados</button>
-            <button class="nav-tab" data-section="ingresos">Ingresos</button>
+            <button class="nav-tab" data-section="ventas">Ventas Productos</button>
+            <button class="nav-tab" data-section="pl-consolidado">P&L Consolidado</button>
+            <button class="nav-tab" data-section="ingresos">Ingresos Recurrentes</button>
             <button class="nav-tab" data-section="costos">Costos</button>
             <button class="nav-tab" data-section="opex">OPEX</button>
             <button class="nav-tab" data-section="rankings">Rankings</button>
@@ -40,27 +42,27 @@
             <div class="kpi-grid">
                 <div class="kpi-card">
                     <div class="kpi-label">Ingresos Totales</div>
-                    <div class="kpi-value" id="kpi-ingresos">Q 0.00</div>
+                    <div class="kpi-value" id="kpi-ingresos">0.00</div>
                     <div class="kpi-change">Proyectado 2026</div>
                 </div>
                 <div class="kpi-card success">
                     <div class="kpi-label">Margen Bruto</div>
                     <div class="kpi-value" id="kpi-margen-bruto">0%</div>
-                    <div class="kpi-change" id="kpi-margen-bruto-monto">Q 0.00</div>
+                    <div class="kpi-change" id="kpi-margen-bruto-monto">0.00</div>
                 </div>
                 <div class="kpi-card info">
                     <div class="kpi-label">Total Costos</div>
-                    <div class="kpi-value" id="kpi-costos">Q 0.00</div>
+                    <div class="kpi-value" id="kpi-costos">0.00</div>
                     <div class="kpi-change">Costos directos</div>
                 </div>
                 <div class="kpi-card warning">
                     <div class="kpi-label">Gastos Operativos</div>
-                    <div class="kpi-value" id="kpi-opex">Q 0.00</div>
+                    <div class="kpi-value" id="kpi-opex">0.00</div>
                     <div class="kpi-change">OPEX Total</div>
                 </div>
                 <div class="kpi-card" id="kpi-resultado-card">
                     <div class="kpi-label">Resultado Neto</div>
-                    <div class="kpi-value" id="kpi-resultado">Q 0.00</div>
+                    <div class="kpi-value" id="kpi-resultado">0.00</div>
                     <div class="kpi-change" id="kpi-margen-operativo">Margen: 0%</div>
                 </div>
             </div>
@@ -70,10 +72,91 @@
         <section id="section-pl" class="section fade-in">
             <div class="section-header">
                 <h2>Estado de Resultados Proyectado 2026 (P&L)</h2>
+                <div>
+                    <button class="btn-toggle active" id="btn-pl-resumido" onclick="togglePL('resumido')">Resumido</button>
+                    <button class="btn-toggle" id="btn-pl-detallado" onclick="togglePL('detallado')">Detallado</button>
+                </div>
             </div>
             <div class="section-body">
+                <!-- Vista Resumida -->
+                <div id="pl-resumido" class="pl-view">
+                    <div class="table-container">
+                        <table class="data-table" id="tabla-pl-resumido">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th class="number">Ene</th>
+                                    <th class="number">Feb</th>
+                                    <th class="number">Mar</th>
+                                    <th class="number">Abr</th>
+                                    <th class="number">May</th>
+                                    <th class="number">Jun</th>
+                                    <th class="number">Jul</th>
+                                    <th class="number">Ago</th>
+                                    <th class="number">Sep</th>
+                                    <th class="number">Oct</th>
+                                    <th class="number">Nov</th>
+                                    <th class="number">Dic</th>
+                                    <th class="number">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pl-body-resumido"></tbody>
+                        </table>
+                    </div>
+                    <div class="content-grid" style="margin-top: 20px;">
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: var(--dark-color);">Distribucion Anual</h4>
+                            <div class="chart-container small">
+                                <canvas id="chart-pl-pie"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: var(--dark-color);">Resultado Mensual</h4>
+                            <div class="chart-container small">
+                                <canvas id="chart-pl-line"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Vista Detallada -->
+                <div id="pl-detallado" class="pl-view" style="display: none;">
+                    <div class="table-container" style="max-height: 600px; overflow-y: auto;">
+                        <table class="data-table" id="tabla-pl-detallado">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 250px;">Concepto</th>
+                                    <th class="number">Ene</th>
+                                    <th class="number">Feb</th>
+                                    <th class="number">Mar</th>
+                                    <th class="number">Abr</th>
+                                    <th class="number">May</th>
+                                    <th class="number">Jun</th>
+                                    <th class="number">Jul</th>
+                                    <th class="number">Ago</th>
+                                    <th class="number">Sep</th>
+                                    <th class="number">Oct</th>
+                                    <th class="number">Nov</th>
+                                    <th class="number">Dic</th>
+                                    <th class="number">Total Anual</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pl-body-detallado"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ventas de Productos Proyectados -->
+        <section id="section-ventas" class="section fade-in">
+            <div class="section-header">
+                <h2>Ventas de Productos Proyectados</h2>
+                <span class="badge">Margen 30%</span>
+            </div>
+            <div class="section-body">
+                <h4 style="margin-bottom: 15px; color: var(--dark-color);">Proyeccion de Ventas Mensuales</h4>
                 <div class="table-container">
-                    <table class="data-table" id="tabla-pl-resumido">
+                    <table class="data-table" id="tabla-ventas">
                         <thead>
                             <tr>
                                 <th>Concepto</th>
@@ -92,31 +175,77 @@
                                 <th class="number">Total</th>
                             </tr>
                         </thead>
-                        <tbody id="pl-body-resumido">
-                        </tbody>
+                        <tbody id="ventas-body"></tbody>
                     </table>
                 </div>
                 <div class="content-grid" style="margin-top: 20px;">
                     <div>
-                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Distribucion Anual</h4>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Distribucion Ventas</h4>
                         <div class="chart-container small">
-                            <canvas id="chart-pl-pie"></canvas>
+                            <canvas id="chart-ventas-pie"></canvas>
                         </div>
                     </div>
                     <div>
-                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Resultado Mensual</h4>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Ventas Mensuales</h4>
                         <div class="chart-container small">
-                            <canvas id="chart-pl-line"></canvas>
+                            <canvas id="chart-ventas-line"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Presupuesto de Ingresos -->
+        <!-- Estado de Resultados Consolidado -->
+        <section id="section-pl-consolidado" class="section fade-in">
+            <div class="section-header">
+                <h2>Estado de Resultados Consolidado 2026</h2>
+                <span class="badge" id="badge-resultado-consolidado">Resultado: 0.00</span>
+            </div>
+            <div class="section-body">
+                <div class="table-container">
+                    <table class="data-table" id="tabla-pl-consolidado">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th class="number">Ene</th>
+                                <th class="number">Feb</th>
+                                <th class="number">Mar</th>
+                                <th class="number">Abr</th>
+                                <th class="number">May</th>
+                                <th class="number">Jun</th>
+                                <th class="number">Jul</th>
+                                <th class="number">Ago</th>
+                                <th class="number">Sep</th>
+                                <th class="number">Oct</th>
+                                <th class="number">Nov</th>
+                                <th class="number">Dic</th>
+                                <th class="number">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pl-consolidado-body"></tbody>
+                    </table>
+                </div>
+                <div class="content-grid" style="margin-top: 20px;">
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Composicion de Ingresos</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-consolidado-pie"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 15px; color: var(--dark-color);">Resultado Consolidado Mensual</h4>
+                        <div class="chart-container small">
+                            <canvas id="chart-consolidado-line"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Presupuesto de Ingresos Recurrentes -->
         <section id="section-ingresos" class="section fade-in">
             <div class="section-header">
-                <h2>Presupuesto de Ingresos (Revenue Breakdown)</h2>
+                <h2>Presupuesto de Ingresos Recurrentes</h2>
                 <span class="badge" id="badge-clientes">0 clientes</span>
             </div>
             <div class="section-body">
@@ -143,8 +272,7 @@
                                 <th class="number">%</th>
                             </tr>
                         </thead>
-                        <tbody id="clientes-body">
-                        </tbody>
+                        <tbody id="clientes-body"></tbody>
                     </table>
                 </div>
                 <div class="content-grid" style="margin-top: 20px;">
@@ -174,8 +302,7 @@
                             <th class="number">% del Total</th>
                         </tr>
                     </thead>
-                    <tbody id="costos-body">
-                    </tbody>
+                    <tbody id="costos-body"></tbody>
                 </table>
                 <div class="content-grid" style="margin-top: 20px;">
                     <div>
@@ -198,7 +325,7 @@
         <section id="section-opex" class="section fade-in">
             <div class="section-header">
                 <h2>Presupuesto de Gastos Operativos (OPEX)</h2>
-                <span class="badge" id="badge-opex">Q 0.00</span>
+                <span class="badge" id="badge-opex">0.00</span>
             </div>
             <div class="section-body">
                 <div class="content-grid">
@@ -227,8 +354,7 @@
                                     <th class="number">Mensual Prom.</th>
                                 </tr>
                             </thead>
-                            <tbody id="opex-body">
-                            </tbody>
+                            <tbody id="opex-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -245,13 +371,11 @@
                 <div class="content-grid">
                     <div>
                         <h4 style="margin-bottom: 15px; color: var(--dark-color);">&#127942; Top 10 Clientes por Ingreso</h4>
-                        <ul class="ranking-list" id="ranking-clientes">
-                        </ul>
+                        <ul class="ranking-list" id="ranking-clientes"></ul>
                     </div>
                     <div>
                         <h4 style="margin-bottom: 15px; color: var(--dark-color);">&#128200; Top 10 Mayores Gastos</h4>
-                        <ul class="ranking-list" id="ranking-gastos">
-                        </ul>
+                        <ul class="ranking-list" id="ranking-gastos"></ul>
                     </div>
                 </div>
             </div>
@@ -261,7 +385,9 @@
 
     <script>
         // Variables globales
-        let datosPresupuesto = DATOS_PRESUPUESTO;
+        const datosPresupuesto = DATOS_PRESUPUESTO;
+        const ventasProductos = DATOS_PRESUPUESTO.ventasProductos || Array(12).fill(0);
+        const MARGEN_PRODUCTOS = DATOS_PRESUPUESTO.margenProductos || 0.30;
         let charts = {};
 
         const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -285,6 +411,8 @@
         function renderizarDashboard() {
             renderizarKPIs();
             renderizarPL();
+            renderizarVentas();
+            renderizarPLConsolidado();
             renderizarIngresos();
             renderizarCostos();
             renderizarOPEX();
@@ -313,6 +441,8 @@
 
         function renderizarPL() {
             const d = datosPresupuesto;
+
+            // Vista Resumida
             const tbodyResumido = document.getElementById('pl-body-resumido');
             const filasResumidas = [
                 { concepto: '(+) Ingresos Totales', datos: d.ingresos.totalMensual, total: d.ingresos.totalAnual, clase: '' },
@@ -330,16 +460,91 @@
                 </tr>
             `).join('');
 
+            // Vista Detallada
+            const tbodyDetallado = document.getElementById('pl-body-detallado');
+            let htmlDetallado = '';
+
+            // INGRESOS
+            htmlDetallado += crearFilaCategoria('INGRESOS', d.ingresos.totalMensual, d.ingresos.totalAnual, 'positive');
+            d.ingresos.clientes.slice(0, 20).forEach(cliente => {
+                htmlDetallado += crearFilaDetalle(cliente.nombre, cliente.mensual, cliente.total);
+            });
+            if (d.ingresos.clientes.length > 20) {
+                const otrosClientes = d.ingresos.clientes.slice(20);
+                const otrosMensual = Array(12).fill(0);
+                let otrosTotal = 0;
+                otrosClientes.forEach(c => {
+                    c.mensual.forEach((v, i) => otrosMensual[i] += v);
+                    otrosTotal += c.total;
+                });
+                htmlDetallado += crearFilaDetalle(`Otros clientes (${otrosClientes.length})`, otrosMensual, otrosTotal);
+            }
+            htmlDetallado += crearFilaSubtotal('Total Ingresos', d.ingresos.totalMensual, d.ingresos.totalAnual);
+
+            // COSTOS
+            htmlDetallado += crearFilaCategoria('COSTOS DIRECTOS', d.costos.totalMensual, d.costos.totalAnual, 'negative');
+            d.costos.detalle.forEach(costo => {
+                htmlDetallado += crearFilaDetalle(costo.nombre, costo.mensual, costo.total);
+            });
+            htmlDetallado += crearFilaSubtotal('Total Costos', d.costos.totalMensual, d.costos.totalAnual);
+
+            // MARGEN BRUTO
+            htmlDetallado += crearFilaResultado('MARGEN BRUTO', d.margenBruto.mensual, d.margenBruto.anual, d.margenBruto.porcentaje);
+
+            // OPEX
+            htmlDetallado += crearFilaCategoria('GASTOS OPERATIVOS (OPEX)', d.opex.totalMensual, d.opex.totalAnual, 'negative');
+
+            if (d.opex.consultores.length > 0) {
+                const totalConsultoresMensual = Array(12).fill(0);
+                let totalConsultores = 0;
+                d.opex.consultores.forEach(g => {
+                    g.mensual.forEach((v, i) => totalConsultoresMensual[i] += v);
+                    totalConsultores += g.total;
+                });
+                htmlDetallado += crearFilaSubcategoria('Consultores', totalConsultoresMensual, totalConsultores);
+                d.opex.consultores.forEach(gasto => {
+                    htmlDetallado += crearFilaDetalle(gasto.nombre, gasto.mensual, gasto.total);
+                });
+            }
+
+            if (d.opex.software.length > 0) {
+                const totalSoftwareMensual = Array(12).fill(0);
+                let totalSoftware = 0;
+                d.opex.software.forEach(g => {
+                    g.mensual.forEach((v, i) => totalSoftwareMensual[i] += v);
+                    totalSoftware += g.total;
+                });
+                htmlDetallado += crearFilaSubcategoria('Software y Tecnologia', totalSoftwareMensual, totalSoftware);
+                d.opex.software.forEach(gasto => {
+                    htmlDetallado += crearFilaDetalle(gasto.nombre, gasto.mensual, gasto.total);
+                });
+            }
+
+            if (d.opex.otros.length > 0) {
+                const totalOtrosMensual = Array(12).fill(0);
+                let totalOtros = 0;
+                d.opex.otros.forEach(g => {
+                    g.mensual.forEach((v, i) => totalOtrosMensual[i] += v);
+                    totalOtros += g.total;
+                });
+                htmlDetallado += crearFilaSubcategoria('Otros Gastos', totalOtrosMensual, totalOtros);
+                d.opex.otros.forEach(gasto => {
+                    htmlDetallado += crearFilaDetalle(gasto.nombre, gasto.mensual, gasto.total);
+                });
+            }
+
+            htmlDetallado += crearFilaSubtotal('Total OPEX', d.opex.totalMensual, d.opex.totalAnual);
+            htmlDetallado += crearFilaResultadoFinal('RESULTADO NETO', d.resultado.mensual, d.resultado.anual, d.resultado.margenOperativo);
+
+            tbodyDetallado.innerHTML = htmlDetallado;
+
             // Graficos
             const ctxPie = document.getElementById('chart-pl-pie').getContext('2d');
             charts.plPie = new Chart(ctxPie, {
                 type: 'doughnut',
                 data: {
                     labels: ['Ingresos', 'Costos Directos', 'OPEX'],
-                    datasets: [{
-                        data: [d.ingresos.totalAnual, d.costos.totalAnual, d.opex.totalAnual],
-                        backgroundColor: [COLORES.exito, COLORES.peligro, COLORES.advertencia]
-                    }]
+                    datasets: [{ data: [d.ingresos.totalAnual, d.costos.totalAnual, d.opex.totalAnual], backgroundColor: [COLORES.exito, COLORES.peligro, COLORES.advertencia] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
             });
@@ -349,15 +554,140 @@
                 type: 'line',
                 data: {
                     labels: MESES,
-                    datasets: [{
-                        label: 'Resultado Mensual',
-                        data: d.resultado.mensual,
-                        borderColor: COLORES.advertencia,
-                        backgroundColor: COLORES.advertencia + '20',
-                        fill: true,
-                        tension: 0.3
-                    }]
+                    datasets: [{ label: 'Resultado Mensual', data: d.resultado.mensual, borderColor: COLORES.advertencia, backgroundColor: COLORES.advertencia + '20', fill: true, tension: 0.3 }]
                 },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: value => value.toLocaleString('es-GT') } } } }
+            });
+        }
+
+        function crearFilaCategoria(concepto, mensual, total, tipo) {
+            const color = tipo === 'positive' ? '#dcfce7' : tipo === 'negative' ? '#fee2e2' : '#f3f4f6';
+            return `<tr style="background: ${color}; font-weight: 700;"><td style="padding: 12px 10px;">${concepto}</td>${mensual.map(v => `<td class="number">${formatoDecimal(v)}</td>`).join('')}<td class="number" style="font-weight: 700;">${formatoDecimal(total)}</td></tr>`;
+        }
+
+        function crearFilaSubcategoria(concepto, mensual, total) {
+            return `<tr style="background: #f8fafc; font-weight: 600;"><td style="padding-left: 20px;">${concepto}</td>${mensual.map(v => `<td class="number">${formatoDecimal(v)}</td>`).join('')}<td class="number">${formatoDecimal(total)}</td></tr>`;
+        }
+
+        function crearFilaDetalle(concepto, mensual, total) {
+            return `<tr><td style="padding-left: 35px; font-size: 0.9rem;">${concepto}</td>${mensual.map(v => `<td class="number" style="font-size: 0.85rem;">${formatoDecimal(v)}</td>`).join('')}<td class="number" style="font-size: 0.85rem;">${formatoDecimal(total)}</td></tr>`;
+        }
+
+        function crearFilaSubtotal(concepto, mensual, total) {
+            return `<tr style="background: #e5e7eb; font-weight: 600;"><td style="padding-left: 10px;">${concepto}</td>${mensual.map(v => `<td class="number">${formatoDecimal(v)}</td>`).join('')}<td class="number">${formatoDecimal(total)}</td></tr>`;
+        }
+
+        function crearFilaResultado(concepto, mensual, total, porcentaje) {
+            return `<tr style="background: #dbeafe; font-weight: 700;"><td style="padding: 12px 10px;">${concepto} (${porcentaje.toFixed(2)}%)</td>${mensual.map(v => `<td class="number">${formatoDecimal(v)}</td>`).join('')}<td class="number">${formatoDecimal(total)}</td></tr>`;
+        }
+
+        function crearFilaResultadoFinal(concepto, mensual, total, porcentaje) {
+            const color = total >= 0 ? '#dcfce7' : '#fee2e2';
+            return `<tr style="background: ${color}; font-weight: 700; font-size: 1.05rem;"><td style="padding: 15px 10px;">${concepto} (${porcentaje.toFixed(2)}%)</td>${mensual.map(v => `<td class="number ${v < 0 ? 'negative' : ''}">${formatoDecimal(v)}</td>`).join('')}<td class="number ${total < 0 ? 'negative' : ''}">${formatoDecimal(total)}</td></tr>`;
+        }
+
+        function togglePL(vista) {
+            document.getElementById('pl-resumido').style.display = vista === 'resumido' ? 'block' : 'none';
+            document.getElementById('pl-detallado').style.display = vista === 'detallado' ? 'block' : 'none';
+            document.getElementById('btn-pl-resumido').classList.toggle('active', vista === 'resumido');
+            document.getElementById('btn-pl-detallado').classList.toggle('active', vista === 'detallado');
+        }
+
+        function renderizarVentas() {
+            const costoVentas = ventasProductos.map(v => v * (1 - MARGEN_PRODUCTOS));
+            const margenProductos = ventasProductos.map(v => v * MARGEN_PRODUCTOS);
+            const totalVentas = sumar(ventasProductos);
+            const totalCosto = sumar(costoVentas);
+            const totalMargen = sumar(margenProductos);
+
+            const tbody = document.getElementById('ventas-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td><strong>Ventas Productos</strong></td>
+                    ${ventasProductos.map(v => `<td class="number">${formatoDecimal(v)}</td>`).join('')}
+                    <td class="number"><strong>${formatoDecimal(totalVentas)}</strong></td>
+                </tr>
+                <tr style="background: #fee2e2;">
+                    <td>(-) Costo de Ventas (70%)</td>
+                    ${costoVentas.map(v => `<td class="number">${formatoDecimal(v)}</td>`).join('')}
+                    <td class="number"><strong>${formatoDecimal(totalCosto)}</strong></td>
+                </tr>
+                <tr style="background: #dcfce7; font-weight: 600;">
+                    <td>(=) Margen Bruto Productos (30%)</td>
+                    ${margenProductos.map(v => `<td class="number">${formatoDecimal(v)}</td>`).join('')}
+                    <td class="number"><strong>${formatoDecimal(totalMargen)}</strong></td>
+                </tr>
+            `;
+
+            // Graficos
+            const ctxPie = document.getElementById('chart-ventas-pie').getContext('2d');
+            charts.ventasPie = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: { labels: ['Costo de Ventas (70%)', 'Margen Bruto (30%)'], datasets: [{ data: [totalCosto, totalMargen], backgroundColor: [COLORES.peligro, COLORES.exito] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            const ctxLine = document.getElementById('chart-ventas-line').getContext('2d');
+            charts.ventasLine = new Chart(ctxLine, {
+                type: 'line',
+                data: { labels: MESES, datasets: [{ label: 'Ventas Mensuales', data: ventasProductos, borderColor: COLORES.advertencia, backgroundColor: COLORES.advertencia + '20', fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: value => value.toLocaleString('es-GT') } } } }
+            });
+        }
+
+        function renderizarPLConsolidado() {
+            const d = datosPresupuesto;
+            const costoVentas = ventasProductos.map(v => v * (1 - MARGEN_PRODUCTOS));
+            const margenProductosMensual = ventasProductos.map(v => v * MARGEN_PRODUCTOS);
+
+            const ingresosConsolidadosMensual = d.ingresos.totalMensual.map((v, i) => v + ventasProductos[i]);
+            const costosConsolidadosMensual = d.costos.totalMensual.map((v, i) => v + costoVentas[i]);
+            const margenBrutoConsolidadoMensual = d.margenBruto.mensual.map((v, i) => v + margenProductosMensual[i]);
+            const resultadoConsolidadoMensual = margenBrutoConsolidadoMensual.map((v, i) => v - d.opex.totalMensual[i]);
+
+            const totalIngresosConsolidado = sumar(ingresosConsolidadosMensual);
+            const totalCostosConsolidado = sumar(costosConsolidadosMensual);
+            const totalMargenBrutoConsolidado = sumar(margenBrutoConsolidadoMensual);
+            const totalResultadoConsolidado = sumar(resultadoConsolidadoMensual);
+
+            const margenBrutoPct = totalIngresosConsolidado > 0 ? (totalMargenBrutoConsolidado / totalIngresosConsolidado * 100) : 0;
+            const margenOperativoPct = totalIngresosConsolidado > 0 ? (totalResultadoConsolidado / totalIngresosConsolidado * 100) : 0;
+
+            document.getElementById('badge-resultado-consolidado').textContent = `Resultado: ${formatoMoneda(totalResultadoConsolidado)}`;
+
+            const tbody = document.getElementById('pl-consolidado-body');
+            const filas = [
+                { concepto: '(+) Ingresos Recurrentes', datos: d.ingresos.totalMensual, total: d.ingresos.totalAnual, clase: '', style: '' },
+                { concepto: '(+) Ventas de Productos', datos: ventasProductos, total: sumar(ventasProductos), clase: '', style: '' },
+                { concepto: '(=) INGRESOS TOTALES', datos: ingresosConsolidadosMensual, total: totalIngresosConsolidado, clase: 'subtotal-row', style: 'background: #dcfce7;' },
+                { concepto: '(-) Costos Recurrentes', datos: d.costos.totalMensual, total: d.costos.totalAnual, clase: '', style: '' },
+                { concepto: '(-) Costo de Ventas (70%)', datos: costoVentas, total: sumar(costoVentas), clase: '', style: '' },
+                { concepto: '(=) TOTAL COSTOS', datos: costosConsolidadosMensual, total: totalCostosConsolidado, clase: 'subtotal-row', style: 'background: #fee2e2;' },
+                { concepto: `(=) MARGEN BRUTO (${margenBrutoPct.toFixed(1)}%)`, datos: margenBrutoConsolidadoMensual, total: totalMargenBrutoConsolidado, clase: 'subtotal-row', style: 'background: #dbeafe;' },
+                { concepto: '(-) Gastos Operativos (OPEX)', datos: d.opex.totalMensual, total: d.opex.totalAnual, clase: '', style: '' },
+                { concepto: `(=) RESULTADO NETO (${margenOperativoPct.toFixed(1)}%)`, datos: resultadoConsolidadoMensual, total: totalResultadoConsolidado, clase: 'total-row', style: totalResultadoConsolidado >= 0 ? 'background: #dcfce7;' : 'background: #fee2e2;' }
+            ];
+
+            tbody.innerHTML = filas.map(f => `
+                <tr class="${f.clase}" style="${f.style}">
+                    <td><strong>${f.concepto}</strong></td>
+                    ${f.datos.map(v => `<td class="number ${v < 0 ? 'negative' : ''}">${formatoMonedaCorto(v)}</td>`).join('')}
+                    <td class="number ${f.total < 0 ? 'negative' : ''}"><strong>${formatoMonedaCorto(f.total)}</strong></td>
+                </tr>
+            `).join('');
+
+            // Graficos
+            const ctxPie = document.getElementById('chart-consolidado-pie').getContext('2d');
+            charts.consolidadoPie = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: { labels: ['Ingresos Recurrentes', 'Ventas Productos'], datasets: [{ data: [d.ingresos.totalAnual, sumar(ventasProductos)], backgroundColor: [COLORES.secundario, COLORES.exito] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            const ctxLine = document.getElementById('chart-consolidado-line').getContext('2d');
+            charts.consolidadoLine = new Chart(ctxLine, {
+                type: 'line',
+                data: { labels: MESES, datasets: [{ label: 'Resultado Mensual', data: resultadoConsolidadoMensual, borderColor: COLORES.advertencia, backgroundColor: COLORES.advertencia + '20', fill: true, tension: 0.3 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: value => value.toLocaleString('es-GT') } } } }
             });
         }
@@ -370,37 +700,17 @@
             let htmlClientes = '';
             d.ingresos.clientes.forEach((cliente, index) => {
                 const porcentaje = (cliente.total / d.ingresos.totalAnual * 100).toFixed(2);
-                htmlClientes += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${cliente.nombre}</td>
-                        ${cliente.mensual.map(v => `<td class="number">${formatoDecimal(v)}</td>`).join('')}
-                        <td class="number"><strong>${formatoDecimal(cliente.total)}</strong></td>
-                        <td class="number">${porcentaje}%</td>
-                    </tr>
-                `;
+                htmlClientes += `<tr><td>${index + 1}</td><td>${cliente.nombre}</td>${cliente.mensual.map(v => `<td class="number">${formatoDecimal(v)}</td>`).join('')}<td class="number"><strong>${formatoDecimal(cliente.total)}</strong></td><td class="number">${porcentaje}%</td></tr>`;
             });
-            htmlClientes += `
-                <tr class="total-row">
-                    <td colspan="2"><strong>TOTAL</strong></td>
-                    ${d.ingresos.totalMensual.map(v => `<td class="number"><strong>${formatoDecimal(v)}</strong></td>`).join('')}
-                    <td class="number"><strong>${formatoDecimal(d.ingresos.totalAnual)}</strong></td>
-                    <td class="number"><strong>100%</strong></td>
-                </tr>
-            `;
+            htmlClientes += `<tr class="total-row"><td colspan="2"><strong>TOTAL</strong></td>${d.ingresos.totalMensual.map(v => `<td class="number"><strong>${formatoDecimal(v)}</strong></td>`).join('')}<td class="number"><strong>${formatoDecimal(d.ingresos.totalAnual)}</strong></td><td class="number"><strong>100%</strong></td></tr>`;
             tbodyClientes.innerHTML = htmlClientes;
 
-            // Graficos
             const top10 = d.ingresos.clientes.slice(0, 10);
             const otros = d.ingresos.clientes.slice(10);
             const otrosTotal = otros.reduce((sum, c) => sum + c.total, 0);
-
             const pieData = [...top10.map(c => c.total)];
             const pieLabels = [...top10.map(c => c.nombre.substring(0, 20))];
-            if (otrosTotal > 0) {
-                pieData.push(otrosTotal);
-                pieLabels.push('Otros (' + otros.length + ')');
-            }
+            if (otrosTotal > 0) { pieData.push(otrosTotal); pieLabels.push('Otros (' + otros.length + ')'); }
 
             const ctxPie = document.getElementById('chart-ingresos-pie').getContext('2d');
             charts.ingresosPie = new Chart(ctxPie, {
@@ -422,19 +732,7 @@
             document.getElementById('badge-margen').textContent = 'Margen: ' + d.margenBruto.porcentaje.toFixed(1) + '%';
 
             const tbody = document.getElementById('costos-body');
-            tbody.innerHTML = d.costos.detalle.map(c => `
-                <tr>
-                    <td>${c.nombre}</td>
-                    <td class="number">${formatoMoneda(c.total)}</td>
-                    <td class="number">${(c.total / d.costos.totalAnual * 100).toFixed(1)}%</td>
-                </tr>
-            `).join('') + `
-                <tr class="total-row">
-                    <td><strong>Total Costos</strong></td>
-                    <td class="number"><strong>${formatoMoneda(d.costos.totalAnual)}</strong></td>
-                    <td class="number"><strong>100%</strong></td>
-                </tr>
-            `;
+            tbody.innerHTML = d.costos.detalle.map(c => `<tr><td>${c.nombre}</td><td class="number">${formatoMoneda(c.total)}</td><td class="number">${(c.total / d.costos.totalAnual * 100).toFixed(1)}%</td></tr>`).join('') + `<tr class="total-row"><td><strong>Total Costos</strong></td><td class="number"><strong>${formatoMoneda(d.costos.totalAnual)}</strong></td><td class="number"><strong>100%</strong></td></tr>`;
 
             const ctxPie = document.getElementById('chart-costos-pie').getContext('2d');
             charts.costosPie = new Chart(ctxPie, {
@@ -475,20 +773,7 @@
 
             const tbody = document.getElementById('opex-body');
             const todosOPEX = [...d.opex.consultores, ...d.opex.software, ...d.opex.otros].sort((a, b) => b.total - a.total);
-            tbody.innerHTML = todosOPEX.map(g => `
-                <tr>
-                    <td>${g.nombre}</td>
-                    <td>${g.categoria}</td>
-                    <td class="number">${formatoMoneda(g.total)}</td>
-                    <td class="number">${formatoMoneda(g.total / 12)}</td>
-                </tr>
-            `).join('') + `
-                <tr class="total-row">
-                    <td colspan="2"><strong>Total OPEX</strong></td>
-                    <td class="number"><strong>${formatoMoneda(d.opex.totalAnual)}</strong></td>
-                    <td class="number"><strong>${formatoMoneda(d.opex.totalAnual / 12)}</strong></td>
-                </tr>
-            `;
+            tbody.innerHTML = todosOPEX.map(g => `<tr><td>${g.nombre}</td><td>${g.categoria}</td><td class="number">${formatoMoneda(g.total)}</td><td class="number">${formatoMoneda(g.total / 12)}</td></tr>`).join('') + `<tr class="total-row"><td colspan="2"><strong>Total OPEX</strong></td><td class="number"><strong>${formatoMoneda(d.opex.totalAnual)}</strong></td><td class="number"><strong>${formatoMoneda(d.opex.totalAnual / 12)}</strong></td></tr>`;
         }
 
         function renderizarRankings() {
@@ -497,43 +782,13 @@
             const listaClientes = document.getElementById('ranking-clientes');
             const top10Clientes = d.ingresos.clientes.slice(0, 10);
             const maxCliente = top10Clientes[0]?.total || 1;
-
-            listaClientes.innerHTML = top10Clientes.map((c, i) => `
-                <li class="ranking-item">
-                    <span class="ranking-position ${i < 3 ? 'top-3' : ''}">${i + 1}</span>
-                    <div class="ranking-info">
-                        <div class="ranking-name">${c.nombre}</div>
-                        <div class="ranking-bar">
-                            <div class="ranking-bar-fill" style="width: ${(c.total / maxCliente * 100)}%"></div>
-                        </div>
-                    </div>
-                    <div class="ranking-value">
-                        ${formatoMonedaCorto(c.total)}
-                        <div class="ranking-percent">${(c.total / d.ingresos.totalAnual * 100).toFixed(1)}%</div>
-                    </div>
-                </li>
-            `).join('');
+            listaClientes.innerHTML = top10Clientes.map((c, i) => `<li class="ranking-item"><span class="ranking-position ${i < 3 ? 'top-3' : ''}">${i + 1}</span><div class="ranking-info"><div class="ranking-name">${c.nombre}</div><div class="ranking-bar"><div class="ranking-bar-fill" style="width: ${(c.total / maxCliente * 100)}%"></div></div></div><div class="ranking-value">${formatoMonedaCorto(c.total)}<div class="ranking-percent">${(c.total / d.ingresos.totalAnual * 100).toFixed(1)}%</div></div></li>`).join('');
 
             const listaGastos = document.getElementById('ranking-gastos');
             const top10Gastos = d.gastos.slice(0, 10);
             const maxGasto = top10Gastos[0]?.total || 1;
             const totalGastos = d.costos.totalAnual + d.opex.totalAnual;
-
-            listaGastos.innerHTML = top10Gastos.map((g, i) => `
-                <li class="ranking-item">
-                    <span class="ranking-position ${i < 3 ? 'top-3' : ''}">${i + 1}</span>
-                    <div class="ranking-info">
-                        <div class="ranking-name">${g.nombre}</div>
-                        <div class="ranking-bar">
-                            <div class="ranking-bar-fill" style="width: ${(g.total / maxGasto * 100)}%; background: linear-gradient(90deg, ${COLORES.peligro}, ${COLORES.advertencia});"></div>
-                        </div>
-                    </div>
-                    <div class="ranking-value">
-                        ${formatoMonedaCorto(g.total)}
-                        <div class="ranking-percent">${(g.total / totalGastos * 100).toFixed(1)}%</div>
-                    </div>
-                </li>
-            `).join('');
+            listaGastos.innerHTML = top10Gastos.map((g, i) => `<li class="ranking-item"><span class="ranking-position ${i < 3 ? 'top-3' : ''}">${i + 1}</span><div class="ranking-info"><div class="ranking-name">${g.nombre}</div><div class="ranking-bar"><div class="ranking-bar-fill" style="width: ${(g.total / maxGasto * 100)}%; background: linear-gradient(90deg, ${COLORES.peligro}, ${COLORES.advertencia});"></div></div></div><div class="ranking-value">${formatoMonedaCorto(g.total)}<div class="ranking-percent">${(g.total / totalGastos * 100).toFixed(1)}%</div></div></li>`).join('');
         }
 
         function inicializarNavegacion() {
@@ -545,9 +800,11 @@
                     tab.classList.add('active');
 
                     const secciones = {
-                        'all': ['kpis', 'pl', 'ingresos', 'costos', 'opex', 'rankings'],
+                        'all': ['kpis', 'pl', 'ventas', 'pl-consolidado', 'ingresos', 'costos', 'opex', 'rankings'],
                         'kpis': ['kpis'],
                         'pl': ['pl'],
+                        'ventas': ['ventas'],
+                        'pl-consolidado': ['pl-consolidado'],
                         'ingresos': ['ingresos'],
                         'costos': ['costos'],
                         'opex': ['opex'],
@@ -563,18 +820,10 @@
             });
         }
 
-        function formatoMoneda(valor) {
-            return valor.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function formatoMonedaCorto(valor) {
-            return valor.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function formatoDecimal(valor) {
-            if (valor === 0 || valor === null || valor === undefined) return '0.00';
-            return valor.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        function sumar(arr) { return arr.reduce((a, b) => a + b, 0); }
+        function formatoMoneda(valor) { return valor.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        function formatoMonedaCorto(valor) { return valor.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        function formatoDecimal(valor) { if (valor === 0 || valor === null || valor === undefined) return '0.00'; return valor.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
     </script>
 </body>
 </html>

@@ -2136,5 +2136,7 @@ const DATOS_PRESUPUESTO = {
       ],
       "total": 350.0
     }
-  ]
+  ],
+  "ventasProductos": [14250, 14250, 14250, 14250, 14250, 14250, 14250, 14250, 14250, 14250, 14250, 14250],
+  "margenProductos": 0.30
 };
