@@ -1,0 +1,12 @@
+# Credenciales y configuracion sensible
+asistente_facturacion/config.json
+
+# Archivos de chat con posibles credenciales
+*.txt
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Archivos del sistema
+nul
