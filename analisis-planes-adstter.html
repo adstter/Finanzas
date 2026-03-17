@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Análisis de Rentabilidad — Planes de Venta Adstter</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #1e3a5f;
+      --primary-light: #2c5282;
+      --accent: #3182ce;
+      --success: #22863a;
+      --success-bg: #e6ffed;
+      --warning: #b08800;
+      --warning-bg: #fff8e1;
+      --danger: #cb2431;
+      --danger-bg: #ffeef0;
+      --neutral: #586069;
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --border: #e1e4e8;
+      --text: #24292e;
+      --text-light: #586069;
+      --gold: #d4a017;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.6;
+    }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff; padding: 48px 0 40px; text-align: center;
+    }
+    header h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.5px; }
+    header h2 { font-size: 1.3rem; font-weight: 400; opacity: 0.9; margin-top: 4px; }
+    header .subtitle { margin-top: 12px; font-size: 0.95rem; opacity: 0.75; }
+    header .badge {
+      display: inline-block; margin-top: 16px; padding: 6px 18px;
+      background: rgba(255,255,255,0.15); border-radius: 20px; font-size: 0.85rem;
+    }
+
+    /* PARAMS BAR */
+    .params-bar {
+      background: var(--card); border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+    }
+    .params-grid {
+      display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
+    }
+    .param-item { text-align: center; }
+    .param-item .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light); }
+    .param-item .value { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+
+    /* SECTIONS */
+    .section { padding: 40px 0; }
+    .section-title {
+      font-size: 1.5rem; font-weight: 700; color: var(--primary);
+      margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+    }
+    .section-desc { color: var(--text-light); margin-bottom: 24px; font-size: 0.95rem; }
+
+    /* PLAN CARDS */
+    .cards-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .plan-card {
+      background: var(--card); border-radius: 10px; padding: 20px;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .plan-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .plan-card .status-bar {
+      position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    }
+    .plan-card.rentable .status-bar { background: var(--success); }
+    .plan-card.marginal .status-bar { background: var(--warning); }
+    .plan-card.no-rentable .status-bar { background: var(--danger); }
+    .plan-card.ajuste .status-bar { background: linear-gradient(90deg, var(--success), var(--warning)); }
+    .plan-card .plan-num {
+      font-size: 0.8rem; font-weight: 600; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .plan-card .plan-name { font-size: 1rem; font-weight: 700; margin: 4px 0 12px; }
+    .plan-card .kpi-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .plan-card .kpi-label { font-size: 0.8rem; color: var(--text-light); }
+    .plan-card .kpi-value { font-size: 0.9rem; font-weight: 700; }
+    .plan-card .veredicto {
+      margin-top: 12px; padding: 6px 12px; border-radius: 6px;
+      font-size: 0.85rem; font-weight: 700; text-align: center;
+    }
+    .veredicto.ok { background: var(--success-bg); color: var(--success); }
+    .veredicto.warn { background: var(--warning-bg); color: var(--warning); }
+    .veredicto.bad { background: var(--danger-bg); color: var(--danger); }
+    .stars { color: var(--gold); letter-spacing: 2px; font-size: 0.9rem; margin-top: 4px; }
+
+    /* TABLES */
+    .table-wrapper { overflow-x: auto; }
+    table {
+      width: 100%; border-collapse: collapse; background: var(--card);
+      border-radius: 8px; overflow: hidden; font-size: 0.9rem;
+    }
+    thead th {
+      background: var(--primary); color: #fff; padding: 12px 16px;
+      text-align: left; font-weight: 600; font-size: 0.82rem;
+      text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
+    }
+    tbody td { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #f0f4f8; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .num { font-variant-numeric: tabular-nums; font-weight: 600; }
+    .positive { color: var(--success); }
+    .negative { color: var(--danger); }
+    .highlight-row { background: #fff8e1 !important; }
+    .danger-row { background: #ffeef0 !important; }
+
+    /* CHARTS */
+    .charts-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+    .chart-card {
+      background: var(--card); border-radius: 10px; padding: 24px;
+      border: 1px solid var(--border);
+    }
+    .chart-card h3 { font-size: 1rem; color: var(--primary); margin-bottom: 16px; }
+    .chart-card.full-width { grid-column: 1 / -1; }
+
+    /* ACCORDION */
+    .accordion { margin-bottom: 12px; }
+    .accordion-header {
+      background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+      padding: 16px 20px; cursor: pointer; display: flex;
+      justify-content: space-between; align-items: center;
+      transition: background 0.2s;
+    }
+    .accordion-header:hover { background: #f0f4f8; }
+    .accordion-header h3 { font-size: 1rem; margin: 0; }
+    .accordion-header .meta { display: flex; gap: 16px; align-items: center; }
+    .accordion-header .tag {
+      padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600;
+    }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.yellow { background: var(--warning-bg); color: var(--warning); }
+    .tag.red { background: var(--danger-bg); color: var(--danger); }
+    .accordion-header .arrow { transition: transform 0.3s; font-size: 1.2rem; color: var(--text-light); }
+    .accordion.open .arrow { transform: rotate(180deg); }
+    .accordion-body {
+      display: none; border: 1px solid var(--border); border-top: none;
+      border-radius: 0 0 8px 8px; padding: 20px; background: var(--card);
+    }
+    .accordion.open .accordion-body { display: block; }
+    .accordion.open .accordion-header { border-radius: 8px 8px 0 0; }
+    .tier-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 12px; }
+    .tier-box {
+      padding: 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg);
+    }
+    .tier-box h4 { font-size: 0.85rem; color: var(--accent); margin-bottom: 10px; }
+    .tier-box .tier-kpi { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.85rem; }
+    .tier-box .tier-kpi .lbl { color: var(--text-light); }
+    .tier-box .tier-kpi .val { font-weight: 700; }
+
+    /* EXPERT SECTION */
+    .expert-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+      padding: 24px; margin-bottom: 20px; border-left: 4px solid var(--primary);
+    }
+    .expert-card h3 { font-size: 1.1rem; color: var(--primary); margin-bottom: 4px; }
+    .expert-card .plan-verdict {
+      font-size: 0.85rem; font-weight: 700; margin-bottom: 12px; padding: 4px 12px;
+      border-radius: 4px; display: inline-block;
+    }
+    .expert-card ul { margin: 8px 0 8px 20px; }
+    .expert-card li { margin-bottom: 4px; font-size: 0.92rem; }
+    .expert-card .recommendation {
+      margin-top: 12px; padding: 12px 16px; border-radius: 6px;
+      background: #f0f7ff; border-left: 3px solid var(--accent); font-size: 0.92rem;
+    }
+    .expert-card .price-suggestion {
+      margin-top: 10px; padding: 10px 16px; border-radius: 6px;
+      background: #fff8e1; border-left: 3px solid var(--warning); font-size: 0.9rem;
+    }
+
+    /* RANKING */
+    .ranking-list { list-style: none; padding: 0; }
+    .ranking-item {
+      display: flex; align-items: center; gap: 16px; padding: 14px 20px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .ranking-pos {
+      width: 36px; height: 36px; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-weight: 800;
+      font-size: 1rem; color: #fff; flex-shrink: 0;
+    }
+    .rank-1 { background: #d4a017; }
+    .rank-2 { background: #7c8a96; }
+    .rank-3 { background: #a0622e; }
+    .rank-4, .rank-5, .rank-6, .rank-7 { background: var(--primary-light); }
+    .ranking-info { flex: 1; }
+    .ranking-info .rname { font-weight: 700; }
+    .ranking-info .rdesc { font-size: 0.85rem; color: var(--text-light); }
+    .ranking-roi { font-weight: 800; font-size: 1.1rem; }
+
+    /* FOOTER */
+    footer {
+      background: var(--primary); color: rgba(255,255,255,0.7); padding: 24px 0;
+      text-align: center; font-size: 0.85rem; margin-top: 40px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      .tier-grid { grid-template-columns: 1fr; }
+      .params-grid { gap: 16px; }
+      header h1 { font-size: 1.6rem; }
+    }
+
+    /* PRINT */
+    @media print {
+      body { background: #fff; }
+      header { background: var(--primary) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .plan-card .status-bar, .veredicto, .tag, .ranking-pos {
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .accordion-body { display: block !important; }
+      .section { page-break-inside: avoid; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="container">
+      <h1>Análisis de Rentabilidad</h1>
+      <h2>7 Planes de Venta &mdash; Adstter</h2>
+      <p class="subtitle">Resumen Ejecutivo &bull; Integración de Costos y Análisis Financiero</p>
+      <div class="badge">Peor Escenario: Máxima cantidad al menor precio por tier</div>
+      <div class="badge" style="margin-top:8px;">Los costos están calculados asumiendo que el cliente solicita el máximo de pantallas, ubicaciones o equipos en cada plan</div>
+    </div>
+  </header>
+
+  <!-- PARAMS BAR -->
+  <div class="params-bar">
+    <div class="container">
+      <div class="params-grid">
+        <div class="param-item">
+          <div class="label">Tipo de cambio</div>
+          <div class="value">Q 7.80 / USD</div>
+        </div>
+        <div class="param-item">
+          <div class="label">Comisión vendedor</div>
+          <div class="value">15%</div>
+        </div>
+        <div class="param-item">
+          <div class="label">Contratos largos</div>
+          <div class="value">24 meses</div>
+        </div>
+        <div class="param-item">
+          <div class="label">Contratos cortos</div>
+          <div class="value">6 meses</div>
+        </div>
+        <div class="param-item">
+          <div class="label">Recuperación máxima</div>
+          <div class="value">12 meses</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- DETALLE POR PLAN -->
+    <div class="section">
+      <div class="section-title">Detalle por Plan &mdash; Todos los Tiers</div>
+      <p class="section-desc">Clic para expandir cada plan y ver el análisis de los 3 niveles de precio.</p>
+      <div id="planAccordions"></div>
+    </div>
+
+    <!-- AJUSTES DE PRECIO REQUERIDOS -->
+    <div class="section">
+      <div class="section-title">Ajustes de Precio Requeridos</div>
+      <p class="section-desc">Planes y tiers que no recuperan inversión en el plazo máximo aceptable. Se propone el precio mínimo para cumplir el criterio de 12 meses (o plazo del contrato si es menor).</p>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Plan</th>
+              <th>Tier</th>
+              <th class="text-center">Plazo Contrato</th>
+              <th class="text-center">Recup. Actual</th>
+              <th class="text-right">Precio Actual (USD)</th>
+              <th class="text-right">Precio Mínimo (USD)</th>
+              <th class="text-right">Precio Sugerido (USD)</th>
+              <th class="text-center">Nueva Recup.</th>
+            </tr>
+          </thead>
+          <tbody id="adjustmentsBody"></tbody>
+        </table>
+      </div>
+      <div class="expert-card" style="margin-top: 20px; border-left-color: var(--warning);">
+        <h3>Nota sobre Plan 4</h3>
+        <p style="font-size:0.92rem;">El Plan 4 no recupera inversión en <strong>ningún tier</strong> dentro del contrato de 6 meses. Se propone un <strong>precio escalonado</strong> para viabilizar con 6 meses: Tier 1 USD 37.50 &rarr; Tier 2 USD 35.00 &rarr; Tier 3 USD 32.50 (descuento por volumen). Sin embargo, estos incrementos son significativos (21%-110%). <strong>La alternativa más competitiva es extender el contrato a 12 meses</strong>, donde solo el Tier 3 necesita un ajuste menor (USD 15.50 a USD 16.50) y los Tiers 1 y 2 recuperan sin cambio de precio.</p>
+      </div>
+    </div>
+
+    <!-- CONCLUSIONES Y RECOMENDACIONES -->
+    <div class="section">
+      <div class="section-title">Conclusiones y Recomendaciones del Análisis Financiero</div>
+      <p class="section-desc">Evaluación experta plan por plan con base en el criterio de recuperación máxima de 12 meses.</p>
+
+      <!-- Plan 1 -->
+      <div class="expert-card" style="border-left-color: var(--success);">
+        <h3>Plan 1 &mdash; Digital Signage (Solo Licencia)</h3>
+        <span class="plan-verdict" style="background:var(--success-bg);color:var(--success);">ALTAMENTE RENTABLE</span>
+        <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+        <ul>
+          <li>Recupera inversión en <strong>4 a 6 meses</strong> en todos los tiers &mdash; muy por debajo del límite de 12 meses.</li>
+          <li>ROI del 325% al 549% en peor escenario. Es el plan con mejor relación riesgo-retorno.</li>
+          <li>Costo por unidad extremadamente bajo (Q 312) al no incluir equipo &mdash; el riesgo de inversión inicial es mínimo.</li>
+          <li>Utilidad neta de hasta Q 164,289 con 300 pantallas en 24 meses.</li>
+        </ul>
+        <div class="recommendation">
+          <strong>Recomendación:</strong> Priorizar como producto de entrada y adquisición de clientes. Ideal para clientes que ya tienen pantallas/players compatibles. No requiere ajuste de precio.
+        </div>
+      </div>
+
+      <!-- Plan 2 -->
+      <div class="expert-card" style="border-left-color: var(--warning);">
+        <h3>Plan 2 &mdash; Digital Signage + Adstter Box</h3>
+        <span class="plan-verdict" style="background:var(--warning-bg);color:var(--warning);">RENTABLE CON AJUSTE EN TIER 3</span>
+        <span class="stars">&#9733;&#9733;&#9733;&#9734;&#9734;</span>
+        <ul>
+          <li>Tiers 1 y 2 recuperan en 8 y 10 meses respectivamente &mdash; dentro del límite.</li>
+          <li><strong>Tier 3 (100+ pantallas) recupera en 15 meses</strong> &mdash; excede el máximo de 12 meses.</li>
+          <li>El costo del Adstter Box (Q 988.54/unidad) incrementa significativamente la inversión inicial vs Plan 1.</li>
+          <li>ROI de 65% a 220% dependiendo del tier. Sigue siendo rentable en todos los escenarios.</li>
+        </ul>
+        <div class="price-suggestion">
+          <strong>Ajuste requerido Tier 3:</strong> Incrementar precio de USD 12.50 a <strong>USD 15.50</strong> por pantalla/mes para garantizar recuperación en 12 meses. Esto representa un aumento del 24%.
+        </div>
+        <div class="recommendation">
+          <strong>Recomendación:</strong> Plan viable y atractivo para clientes que necesitan equipo incluido. Ajustar precio del Tier 3 antes de lanzar. Los tiers 1 y 2 están bien calibrados.
+        </div>
+      </div>
+
+      <!-- Plan 3 -->
+      <div class="expert-card" style="border-left-color: var(--success);">
+        <h3>Plan 3 &mdash; Ponmusica 6M Instalación Remota</h3>
+        <span class="plan-verdict" style="background:var(--success-bg);color:var(--success);">PRODUCTO ESTRELLA &mdash; MEJOR ROI</span>
+        <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+        <ul>
+          <li>Recupera inversión en <strong>1 mes</strong> en todos los tiers &mdash; el más rápido de los 7 planes.</li>
+          <li>ROI extraordinario: <strong>1,031% a 2,161%</strong>. Es el plan más rentable por amplio margen.</li>
+          <li>Costo por unidad de solo Q 95 (instalación remota, sin equipo ni desplazamiento).</li>
+          <li>Utilidad por pantalla/mes de USD 20.92 a USD 43.87 &mdash; la más alta de todos los planes.</li>
+        </ul>
+        <div class="recommendation">
+          <strong>Recomendación:</strong> Este es el producto estrella de Adstter. Maximizar esfuerzo comercial en este plan. Aplica para clientes con Windows PC propio. No requiere ajuste de precio &mdash; los márgenes son excepcionales.
+        </div>
+      </div>
+
+      <!-- Plan 4 -->
+      <div class="expert-card" style="border-left-color: var(--danger);">
+        <h3>Plan 4 &mdash; Ponmusica Ambiente 6M (Comodato)</h3>
+        <span class="plan-verdict" style="background:var(--danger-bg);color:var(--danger);">NO RENTABLE &mdash; REQUIERE REESTRUCTURACIÓN</span>
+        <span class="stars">&#9733;&#9734;&#9734;&#9734;&#9734;</span>
+        <ul>
+          <li><strong>No recupera inversión en ninguno de los 3 tiers</strong> dentro del contrato de 6 meses.</li>
+          <li>Genera <strong>pérdida neta</strong> en todos los escenarios: desde -Q 502 (T1) hasta -Q 197,055 (T3).</li>
+          <li>El problema raíz: mismo costo de equipo que Plan 5 (Q 1,417/unidad) pero precio de venta significativamente menor.</li>
+          <li>Meses de recuperación: 7, 9 y 13 meses &mdash; imposibles en un contrato de 6 meses.</li>
+          <li>Comparación directa con Plan 5: mismo costo pero Plan 5 cobra USD 76 vs USD 31 del Plan 4 en Tier 1. Plan 5 sí es rentable.</li>
+        </ul>
+        <div class="price-suggestion">
+          <strong>Opción A &mdash; Mantener 6 meses con precio escalonado:</strong><br>
+          &bull; Tier 1 (1-9): de USD 31.00 a <strong>USD 37.50</strong>/ambiente/mes (+21%)<br>
+          &bull; Tier 2 (10-99): de USD 23.25 a <strong>USD 35.00</strong>/ambiente/mes (+50%)<br>
+          &bull; Tier 3 (100+): de USD 15.50 a <strong>USD 32.50</strong>/ambiente/mes (+110%)<br>
+          Recuperación estimada: T1 en 6m, T2 en 6m, T3 en 6m.<br><br>
+          <strong>Opción B (recomendada) &mdash; Extender contrato a 12 meses:</strong><br>
+          Con 12 meses, T1 (7m) y T2 (9m) recuperan sin cambio de precio. Solo T3 requiere ajuste menor de USD 15.50 a <strong>USD 16.50</strong>. Esta opción es más competitiva comercialmente.
+        </div>
+        <div class="recommendation">
+          <strong>Recomendación:</strong> <strong>NO lanzar con la estructura actual.</strong> La combinación de alto costo de equipo en comodato + contrato corto de 6 meses + precios bajos hace este plan financieramente inviable. Implementar la Opción B (12 meses) es la ruta más práctica para hacer viable este plan.
+        </div>
+      </div>
+
+      <!-- Plan 5 -->
+      <div class="expert-card" style="border-left-color: var(--warning);">
+        <h3>Plan 5 &mdash; Ponmusica Centro Comercial 6M (Comodato)</h3>
+        <span class="plan-verdict" style="background:var(--warning-bg);color:var(--warning);">RENTABLE &mdash; TIER 3 MARGINAL</span>
+        <span class="stars">&#9733;&#9733;&#9733;&#9734;&#9734;</span>
+        <ul>
+          <li>Recupera inversión en 3 a 6 meses &mdash; dentro del plazo del contrato en todos los tiers.</li>
+          <li>ROI de 19% a 135%. El Tier 3 (ROI 19%) es el más ajustado de todos los planes rentables.</li>
+          <li>Mismo costo de equipo que Plan 4, pero precios premium (USD 38-76) lo hacen viable.</li>
+          <li>Tier 3 recupera exactamente en el mes 6 (último mes del contrato) &mdash; sin margen de error.</li>
+        </ul>
+        <div class="recommendation">
+          <strong>Recomendación:</strong> Plan viable para el segmento de centros comerciales. El precio premium se justifica por la ubicación de alto tráfico. Monitorear de cerca el Tier 3: cualquier sobrecosto lo vuelve deficitario. Considerar un precio mínimo de USD 40 para el Tier 3 como margen de seguridad.
+        </div>
+      </div>
+
+      <!-- Plan 6 -->
+      <div class="expert-card" style="border-left-color: var(--success);">
+        <h3>Plan 6 &mdash; Ponmusica 24M + Adstter Box</h3>
+        <span class="plan-verdict" style="background:var(--success-bg);color:var(--success);">MUY RECOMENDADO &mdash; MAYOR UTILIDAD ABSOLUTA</span>
+        <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+        <ul>
+          <li>Recupera inversión en 4 a 7 meses en todos los tiers &mdash; muy dentro del límite de 12 meses.</li>
+          <li>ROI robusto de 254% a 611%.</li>
+          <li><strong>Mayor utilidad absoluta:</strong> hasta Q 1,130,190 con 300 unidades en 24 meses.</li>
+          <li>El contrato largo de 24 meses permite amortizar el costo del equipo profesional (Q 1,627/unidad) y generar retornos significativos.</li>
+          <li>Utilidad por pantalla/mes de USD 20.12 a USD 48.94 &mdash; consistentemente alta.</li>
+        </ul>
+        <div class="recommendation">
+          <strong>Recomendación:</strong> Este es el plan premium de largo plazo con el mejor balance entre inversión y retorno absoluto. Priorizar para clientes con compromiso de largo plazo. No requiere ajuste de precio. Combinado con Plan 3 (corto plazo), forman la columna vertebral de la oferta comercial.
+        </div>
+      </div>
+
+      <!-- Plan 7 -->
+      <div class="expert-card" style="border-left-color: var(--warning);">
+        <h3>Plan 7 &mdash; Ponmusica 24M + Infraestructura HDMI 8TVs</h3>
+        <span class="plan-verdict" style="background:var(--warning-bg);color:var(--warning);">RENTABLE CON AJUSTE EN TIER 3</span>
+        <span class="stars">&#9733;&#9733;&#9733;&#9734;&#9734;</span>
+        <ul>
+          <li>Tiers 1 y 2 recuperan en 8 y 11 meses &mdash; dentro del límite de 12 meses.</li>
+          <li><strong>Tier 3 (100+ ambientes) recupera en 16 meses</strong> &mdash; excede significativamente el máximo de 12 meses.</li>
+          <li>Inversión inicial muy alta: Q 4,927/unidad (el más costoso). El Splitter HDMI 1x8 (Q 2,500) es el componente dominante.</li>
+          <li>ROI de 52% a 203%. Aunque positivo, es el más bajo entre planes rentables de 24 meses.</li>
+        </ul>
+        <div class="price-suggestion">
+          <strong>Ajuste requerido Tier 3:</strong> Incrementar precio de USD 45.71 a <strong>USD 60.50</strong> por ambiente/mes para garantizar recuperación en 12 meses. Esto representa un aumento del 32%.
+        </div>
+        <div class="recommendation">
+          <strong>Recomendación:</strong> Plan de nicho para clientes que necesitan infraestructura HDMI multi-pantalla. Ajustar el precio del Tier 3 es indispensable. Evaluar si el mercado tolera USD 60.50/mes por ambiente. Si no, considerar limitar este plan a ventas de hasta 99 unidades (Tiers 1 y 2) donde sí es rentable sin ajuste.
+        </div>
+      </div>
+    </div>
+
+    <!-- RANKING FINAL -->
+    <div class="section">
+      <div class="section-title">Ranking de Rentabilidad</div>
+      <p class="section-desc">Ordenado por ROI en el peor escenario (Tier 3, 300 unidades).</p>
+      <ol class="ranking-list" id="rankingList"></ol>
+    </div>
+
+    <!-- CONCLUSIONES GENERALES -->
+    <div class="section">
+      <div class="section-title">Conclusiones Generales</div>
+      <div class="expert-card" style="border-left-color: var(--primary);">
+        <ul>
+          <li><strong>6 de 7 planes son rentables</strong> en el peor escenario. La propuesta comercial es sólida en su conjunto.</li>
+          <li><strong>Plan 4 es el único plan no viable</strong> en su estructura actual. Requiere extensión de contrato a 12 meses mínimo antes de lanzarse.</li>
+          <li><strong>Planes 2 y 7 necesitan ajuste de precio en Tier 3</strong> para cumplir el criterio de recuperación en 12 meses. Los Tiers 1 y 2 están correctamente calibrados.</li>
+          <li><strong>Plan 3 y Plan 6 son los productos estrella</strong>: Plan 3 para volumen rápido (ROI 1,031%) y Plan 6 para utilidad máxima a largo plazo (Q 1.13M).</li>
+          <li>La <strong>comisión del 15%</strong> es razonable y no compromete la rentabilidad de ningún plan viable.</li>
+          <li>Los <strong>planes de 24 meses</strong> (1, 2, 6, 7) generan significativamente más utilidad absoluta que los de 6 meses, como es esperado por el plazo extendido.</li>
+          <li>El costo del <strong>Adstter Box (Q 989-1,199)</strong> es el factor diferenciador de costos más importante entre planes. Los planes sin equipo (1 y 3) tienen ROIs superiores.</li>
+        </ul>
+      </div>
+    </div>
+    <!-- GRAFICOS -->
+    <div class="section">
+      <div class="section-title">Análisis Visual Comparativo</div>
+      <p class="section-desc">Gráficos de línea comparando indicadores clave entre los 7 planes &mdash; Tier 3 (costos con máximo de pantallas/equipos/ubicaciones por plan)</p>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>ROI por Plan (%)</h3>
+          <canvas id="roiChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Meses de Recuperación vs Límite 12 meses</h3>
+          <canvas id="recoveryChart"></canvas>
+        </div>
+        <div class="chart-card full-width">
+          <h3>Utilidad Neta al Plazo del Contrato (Q)</h3>
+          <canvas id="profitChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <p>Análisis de Rentabilidad &mdash; Planes de Venta Adstter &bull; Integración de costos y análisis financiero</p>
+      <p style="margin-top:4px;">Criterio: recuperación de inversión en máximo 12 meses &bull; Escenario: máxima cantidad al menor precio por tier</p>
+    </div>
+  </footer>
+
+  <script>
+    // ===================== DATA =====================
+    const TC = 7.8;
+    const COMISION = 0.15;
+
+    const plans = [
+      {
+        id: 1, name: 'Digital Signage (Solo Licencia)', plazo: 24,
+        costoUnit: 311.93,
+        tiers: [
+          { label:'1-9', qty:9, precio:7.50, costoTotal:1655.37, ingresoNetoMes:447.53, mesesRecup:4, utilidadNeta:9085.23, roi:5.49, utilPantMes:5.39 },
+          { label:'10-99', qty:99, precio:6.00, costoTotal:16769.11, ingresoNetoMes:3938.22, mesesRecup:5, utilidadNeta:77748.17, roi:4.64, utilPantMes:4.20 },
+          { label:'100+', qty:300, precio:4.50, costoTotal:50523.11, ingresoNetoMes:8950.50, mesesRecup:6, utilidadNeta:164288.89, roi:3.25, utilPantMes:2.93 }
+        ],
+        veredicto: 'rentable', estrellas: 5,
+        conclusion: 'Todos los tiers recuperan inversión en 4-6 meses, muy por debajo del límite de 12 meses. ROI entre 325% y 549%. Los costos son mínimos al no incluir equipo (solo instalación y materiales de red). Plan de bajo riesgo, ideal como producto de entrada para clientes que ya cuentan con pantallas/players compatibles. No requiere ajuste de precio.'
+      },
+      {
+        id: 2, name: 'Digital Signage + Adstter Box', plazo: 24,
+        costoUnit: 1345.71,
+        tiers: [
+          { label:'1-9', qty:9, precio:24.50, costoTotal:10959.40, ingresoNetoMes:1461.92, mesesRecup:8, utilidadNeta:24126.56, roi:2.20, utilPantMes:14.32 },
+          { label:'10-99', qty:99, precio:18.50, costoTotal:119113.43, ingresoNetoMes:12142.85, mesesRecup:10, utilidadNeta:172314.85, roi:1.45, utilPantMes:9.30 },
+          { label:'100+', qty:300, precio:12.50, costoTotal:360657.43, ingresoNetoMes:24862.50, mesesRecup:15, utilidadNeta:236042.57, roi:0.65, utilPantMes:4.20 }
+        ],
+        veredicto: 'ajuste', estrellas: 3,
+        conclusion: 'Tiers 1 y 2 recuperan en 8 y 10 meses respectivamente, dentro del límite. Sin embargo, el Tier 3 (100+ pantallas) recupera en 15 meses, excediendo el máximo de 12 meses. El costo del Adstter Box (Q 988.54/unidad) eleva significativamente la inversión cuando el cliente solicita el máximo de equipos. Se requiere ajustar el precio del Tier 3 de USD 12.50 a USD 15.50 (+24%). Tiers 1 y 2 están bien calibrados.'
+      },
+      {
+        id: 3, name: 'Ponmusica 6M Instalación Remota', plazo: 6,
+        costoUnit: 95.00,
+        tiers: [
+          { label:'1-9', qty:9, precio:54.00, costoTotal:855, ingresoNetoMes:3222.18, mesesRecup:1, utilidadNeta:18478.08, roi:21.61, utilPantMes:43.87 },
+          { label:'10-99', qty:99, precio:40.50, costoTotal:9405, ingresoNetoMes:26582.99, mesesRecup:1, utilidadNeta:150092.91, roi:15.96, utilPantMes:32.40 },
+          { label:'100+', qty:300, precio:27.00, costoTotal:28500, ingresoNetoMes:53703, mesesRecup:1, utilidadNeta:293718, roi:10.31, utilPantMes:20.92 }
+        ],
+        veredicto: 'rentable', estrellas: 5,
+        conclusion: 'Producto estrella con el mejor ROI de los 7 planes: entre 1,031% y 2,161%. Recupera inversión en solo 1 mes en todos los tiers. El costo por unidad es mínimo (Q 95) gracias a la instalación remota, sin equipo ni desplazamiento. Incluso cuando el cliente solicita el máximo de pantallas (300), la rentabilidad es excepcional. Maximizar esfuerzo comercial en este plan.'
+      },
+      {
+        id: 4, name: 'Ponmusica Ambiente 6M (Comodato)', plazo: 6,
+        costoUnit: 1416.96,
+        tiers: [
+          { label:'1-9', qty:9, precio:31.00, costoTotal:11600.65, ingresoNetoMes:1849.77, mesesRecup:7, utilidadNeta:-502.03, roi:-0.04, utilPantMes:-1.19, precioSugerido:37.50 },
+          { label:'10-99', qty:99, precio:23.25, costoTotal:126167.18, ingresoNetoMes:15260.60, mesesRecup:9, utilidadNeta:-34603.57, roi:-0.27, utilPantMes:-7.47, precioSugerido:35.00 },
+          { label:'100+', qty:300, precio:15.50, costoTotal:382032.43, ingresoNetoMes:30829.50, mesesRecup:13, utilidadNeta:-197055.43, roi:-0.52, utilPantMes:-14.04, precioSugerido:32.50 }
+        ],
+        veredicto: 'no-rentable', estrellas: 1,
+        conclusion: 'NO RENTABLE en su estructura actual. No recupera inversión en ninguno de los 3 tiers dentro del contrato de 6 meses (necesita 7, 9 y 13 meses). Cuando el cliente solicita el máximo de equipos, la pérdida alcanza -Q 197,055. Se propone precio escalonado: Tier 1 USD 37.50, Tier 2 USD 35.00, Tier 3 USD 32.50, lo que permite recuperar en 6 meses en todos los tiers. Alternativa: extender contrato a 12 meses mínimo, donde solo el Tier 3 necesita ajuste menor (USD 15.50 a USD 16.50).'
+      },
+      {
+        id: 5, name: 'Ponmusica CC 6M (Comodato)', plazo: 6,
+        costoUnit: 1416.96,
+        tiers: [
+          { label:'1-9', qty:9, precio:76.00, costoTotal:11600.65, ingresoNetoMes:4534.92, mesesRecup:3, utilidadNeta:15608.87, roi:1.35, utilPantMes:37.06 },
+          { label:'10-99', qty:99, precio:57.00, costoTotal:126167.18, ingresoNetoMes:37413.09, mesesRecup:4, utilidadNeta:98311.36, roi:0.78, utilPantMes:21.22 },
+          { label:'100+', qty:300, precio:38.00, costoTotal:382032.43, ingresoNetoMes:75582, mesesRecup:6, utilidadNeta:71459.57, roi:0.19, utilPantMes:5.09 }
+        ],
+        veredicto: 'marginal', estrellas: 3,
+        conclusion: 'Rentable en los 3 tiers pero con margen ajustado en Tier 3 (ROI 19%, recupera justo al mes 6 del contrato). Mismo costo de equipo que Plan 4, pero los precios premium para centros comerciales (USD 38-76) lo hacen viable. Cuando el cliente solicita el máximo de equipos (300), la utilidad es positiva pero mínima (Q 71,460). Cualquier sobrecosto imprevisto en el Tier 3 lo vuelve deficitario. Considerar precio mínimo de USD 40 en Tier 3 como margen de seguridad.'
+      },
+      {
+        id: 6, name: 'Ponmusica 24M + Adstter Box', plazo: 24,
+        costoUnit: 1627.18,
+        tiers: [
+          { label:'1-9', qty:9, precio:67.00, costoTotal:13492.63, ingresoNetoMes:3997.89, mesesRecup:4, utilidadNeta:82456.73, roi:6.11, utilPantMes:48.94 },
+          { label:'10-99', qty:99, precio:49.50, costoTotal:146978.96, ingresoNetoMes:32490.31, mesesRecup:5, utilidadNeta:632788.60, roi:4.31, utilPantMes:34.14 },
+          { label:'100+', qty:300, precio:33.00, costoTotal:445098.43, ingresoNetoMes:65637, mesesRecup:7, utilidadNeta:1130189.57, roi:2.54, utilPantMes:20.12 }
+        ],
+        veredicto: 'rentable', estrellas: 5,
+        conclusion: 'Muy rentable con la mayor utilidad absoluta de todos los planes: hasta Q 1,130,190 en 24 meses cuando el cliente solicita el máximo de equipos. Recupera en 4-7 meses, bien dentro del límite de 12 meses. ROI robusto entre 254% y 611%. El contrato largo de 24 meses permite amortizar el costo del equipo profesional (Q 1,627/unidad). Mejor plan de largo plazo, combinado con Plan 3 forman la columna vertebral de la oferta comercial.'
+      },
+      {
+        id: 7, name: 'Ponmusica 24M + Infra HDMI 8TVs', plazo: 24,
+        costoUnit: 4927.07,
+        tiers: [
+          { label:'1-9', qty:9, precio:91.42, costoTotal:43191.66, ingresoNetoMes:5455.03, mesesRecup:8, utilidadNeta:87729.10, roi:2.03, utilPantMes:52.07 },
+          { label:'10-99', qty:99, precio:68.60, costoTotal:473668.21, ingresoNetoMes:45026.98, mesesRecup:11, utilidadNeta:606979.36, roi:1.28, utilPantMes:32.75 },
+          { label:'100+', qty:300, precio:45.71, costoTotal:1435065.86, ingresoNetoMes:90917.19, mesesRecup:16, utilidadNeta:746946.70, roi:0.52, utilPantMes:13.30 }
+        ],
+        veredicto: 'ajuste', estrellas: 3,
+        conclusion: 'Tiers 1 y 2 recuperan en 8 y 11 meses, dentro del límite. El Tier 3 (100+ ambientes) excede significativamente con 16 meses de recuperación cuando el cliente solicita el máximo de equipos. Inversión inicial muy alta: Q 4,927/unidad (la más costosa de los 7 planes). Se requiere ajustar el precio del Tier 3 de USD 45.71 a USD 60.50 (+32%). Plan de nicho para clientes que necesitan infraestructura HDMI multi-pantalla. Evaluar si el mercado tolera el ajuste; de lo contrario, limitar ventas a Tiers 1 y 2.'
+      }
+    ];
+
+    // ===================== HELPERS =====================
+    function fmtQ(n) { return 'Q ' + n.toLocaleString('es-GT', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+    function fmtUSD(n) { return 'USD ' + n.toFixed(2); }
+    function fmtPct(n) { return (n * 100).toFixed(1) + '%'; }
+    function fmtNum(n) { return n.toLocaleString('es-GT', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+    function getVerdictClass(p) {
+      if (p.veredicto === 'rentable') return 'ok';
+      if (p.veredicto === 'marginal' || p.veredicto === 'ajuste') return 'warn';
+      return 'bad';
+    }
+    function getVerdictLabel(p) {
+      if (p.veredicto === 'rentable') return 'RENTABLE';
+      if (p.veredicto === 'ajuste') return 'AJUSTE REQUERIDO';
+      if (p.veredicto === 'marginal') return 'MARGINAL';
+      return 'NO RENTABLE';
+    }
+    function getTagClass(p) {
+      if (p.veredicto === 'rentable') return 'green';
+      if (p.veredicto === 'marginal' || p.veredicto === 'ajuste') return 'yellow';
+      return 'red';
+    }
+
+    // Max recovery target per plan
+    function getMaxRecovery(p) { return Math.min(12, p.plazo); }
+
+    // Calculate min price for recovery in target months
+    function calcMinPrice(costoTotal, qty, targetMonths) {
+      return costoTotal / (qty * TC * (1 - COMISION) * targetMonths);
+    }
+
+    // ===================== PRICE ADJUSTMENTS TABLE =====================
+    (function renderAdjustments() {
+      const tbody = document.getElementById('adjustmentsBody');
+      const adjustments = [];
+
+      plans.forEach(p => {
+        const maxR = getMaxRecovery(p);
+        p.tiers.forEach((t, i) => {
+          if (t.mesesRecup > maxR) {
+            const minPrice = calcMinPrice(t.costoTotal, t.qty, maxR);
+            const suggested = t.precioSugerido || Math.ceil(minPrice * 2) / 2;
+            const newMonthly = suggested * t.qty * TC * (1 - COMISION);
+            const newRecup = Math.ceil(t.costoTotal / newMonthly);
+            adjustments.push({
+              plan: p.id, planName: p.name, tier: t.label, plazo: p.plazo,
+              recupActual: t.mesesRecup, precioActual: t.precio,
+              precioMin: minPrice, precioSugerido: suggested, newRecup: newRecup
+            });
+          }
+        });
+      });
+
+      adjustments.forEach(a => {
+        tbody.innerHTML += `
+          <tr>
+            <td class="num">Plan ${a.plan}</td>
+            <td class="text-center">${a.tier}</td>
+            <td class="text-center">${a.plazo}m</td>
+            <td class="text-center negative num">${a.recupActual}m</td>
+            <td class="text-right num">${a.precioActual.toFixed(2)}</td>
+            <td class="text-right num">${a.precioMin.toFixed(2)}</td>
+            <td class="text-right num positive"><strong>${a.precioSugerido.toFixed(2)}</strong></td>
+            <td class="text-center positive num">${a.newRecup}m</td>
+          </tr>`;
+      });
+    })();
+
+    // ===================== PLAN ACCORDIONS =====================
+    (function renderAccordions() {
+      const container = document.getElementById('planAccordions');
+      plans.forEach(p => {
+        const acc = document.createElement('div');
+        acc.className = 'accordion';
+        const maxR = getMaxRecovery(p);
+
+        let tiersHTML = '';
+        p.tiers.forEach(t => {
+          const fails = t.mesesRecup > maxR;
+          const isNeg = t.utilidadNeta < 0;
+          tiersHTML += `
+            <div class="tier-box" ${fails ? 'style="border-color:var(--danger);background:#fff5f5"' : ''}>
+              <h4>Tier: ${t.label} unidades (${t.qty} pantallas)</h4>
+              <div class="tier-kpi"><span class="lbl">Precio venta/mes</span><span class="val">${fmtUSD(t.precio)}</span></div>
+              <div class="tier-kpi"><span class="lbl">Costo total instalación</span><span class="val">${fmtQ(t.costoTotal)}</span></div>
+              <div class="tier-kpi"><span class="lbl">Ingreso neto/mes</span><span class="val">${fmtQ(t.ingresoNetoMes)}</span></div>
+              <div class="tier-kpi"><span class="lbl">Meses recuperación</span><span class="val ${fails?'negative':''}">${t.mesesRecup}m ${fails ? '(EXCEDE)' : ''}</span></div>
+              <div class="tier-kpi"><span class="lbl">Utilidad neta ${p.plazo}m</span><span class="val ${isNeg?'negative':'positive'}">${fmtQ(t.utilidadNeta)}</span></div>
+              <div class="tier-kpi"><span class="lbl">ROI</span><span class="val ${isNeg?'negative':'positive'}">${(t.roi*100).toFixed(0)}%</span></div>
+              <div class="tier-kpi"><span class="lbl">Utilidad/pant/mes</span><span class="val ${isNeg?'negative':'positive'}">${fmtUSD(t.utilPantMes)}</span></div>
+              ${fails ? `<div style="margin-top:8px;padding:6px 10px;background:var(--danger-bg);border-radius:4px;font-size:0.82rem;color:var(--danger)"><strong>Precio sugerido:</strong> USD ${(t.precioSugerido || Math.ceil(calcMinPrice(t.costoTotal, t.qty, maxR)*2)/2).toFixed(2)}/mes</div>` : ''}
+            </div>`;
+        });
+
+        acc.innerHTML = `
+          <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+            <h3>Plan ${p.id} &mdash; ${p.name} (${p.plazo} meses)</h3>
+            <div class="meta">
+              <span class="tag ${getTagClass(p)}">${getVerdictLabel(p)}</span>
+              <span class="arrow">&#9660;</span>
+            </div>
+          </div>
+          <div class="accordion-body">
+            <p style="margin-bottom:8px;font-size:0.9rem;color:var(--text-light)">Costo por unidad: <strong>${fmtQ(p.costoUnit)}</strong> &bull; Contrato: <strong>${p.plazo} meses</strong> &bull; Límite recuperación: <strong>${maxR} meses</strong></p>
+            <p style="margin-bottom:12px;font-size:0.85rem;color:var(--text-light);font-style:italic;">Nota: Los costos reflejan el escenario donde el cliente solicita la cantidad máxima de pantallas, equipos o ubicaciones permitida en cada tier.</p>
+            <div class="tier-grid">${tiersHTML}</div>
+            <div style="margin-top:16px;padding:16px 20px;border-radius:8px;background:${p.veredicto==='no-rentable'?'var(--danger-bg)':p.veredicto==='marginal'||p.veredicto==='ajuste'?'var(--warning-bg)':'var(--success-bg)'};border-left:4px solid ${p.veredicto==='no-rentable'?'var(--danger)':p.veredicto==='marginal'||p.veredicto==='ajuste'?'var(--warning)':'var(--success)'}">
+              <strong style="font-size:0.9rem;">Conclusión Plan ${p.id}:</strong>
+              <p style="font-size:0.9rem;margin-top:4px;">${p.conclusion}</p>
+            </div>
+          </div>`;
+        container.appendChild(acc);
+      });
+    })();
+
+    // ===================== RANKING =====================
+    (function renderRanking() {
+      const list = document.getElementById('rankingList');
+      const sorted = [...plans].sort((a, b) => b.tiers[2].roi - a.tiers[2].roi);
+      sorted.forEach((p, i) => {
+        const t3 = p.tiers[2];
+        const roiPct = (t3.roi * 100).toFixed(0);
+        list.innerHTML += `
+          <li class="ranking-item">
+            <div class="ranking-pos rank-${i+1}">${i+1}</div>
+            <div class="ranking-info">
+              <div class="rname">Plan ${p.id} &mdash; ${p.name}</div>
+              <div class="rdesc">${p.plazo} meses &bull; Recup: ${t3.mesesRecup}m &bull; Utilidad: ${fmtQ(t3.utilidadNeta)}</div>
+            </div>
+            <div class="ranking-roi ${t3.roi >= 0 ? 'positive' : 'negative'}">${roiPct}%</div>
+          </li>`;
+      });
+    })();
+
+    // ===================== CHARTS =====================
+    const planLabels = plans.map(p => 'Plan ' + p.id);
+    const t3Data = plans.map(p => p.tiers[2]);
+
+    // Colors per plan
+    const planColors = plans.map(p => {
+      if (p.veredicto === 'no-rentable') return '#e74c3c';
+      if (p.veredicto === 'marginal' || p.veredicto === 'ajuste') return '#f39c12';
+      return '#27ae60';
+    });
+    const planBgColors = plans.map(p => {
+      if (p.veredicto === 'no-rentable') return 'rgba(231,76,60,0.1)';
+      if (p.veredicto === 'marginal' || p.veredicto === 'ajuste') return 'rgba(243,156,18,0.1)';
+      return 'rgba(39,174,96,0.1)';
+    });
+
+    // ROI Chart
+    new Chart(document.getElementById('roiChart'), {
+      type: 'line',
+      data: {
+        labels: planLabels,
+        datasets: [{
+          label: 'ROI (%)',
+          data: t3Data.map(t => +(t.roi * 100).toFixed(1)),
+          borderColor: '#2c5282',
+          backgroundColor: 'rgba(44,82,130,0.1)',
+          borderWidth: 3,
+          pointBackgroundColor: planColors,
+          pointBorderColor: planColors,
+          pointRadius: 8,
+          pointHoverRadius: 11,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => 'ROI: ' + ctx.parsed.y + '%' } }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: v => v + '%' },
+            grid: { color: '#e1e4e8' }
+          },
+          x: { grid: { color: '#f0f0f0' } }
+        }
+      }
+    });
+
+    // Recovery Chart
+    const recoveryColors = plans.map(p => {
+      const maxR = getMaxRecovery(p);
+      return p.tiers[2].mesesRecup > maxR ? '#e74c3c' : '#3498db';
+    });
+    new Chart(document.getElementById('recoveryChart'), {
+      type: 'line',
+      data: {
+        labels: planLabels,
+        datasets: [
+          {
+            label: 'Meses recuperación',
+            data: t3Data.map(t => t.mesesRecup),
+            borderColor: '#3498db',
+            backgroundColor: 'rgba(52,152,219,0.1)',
+            borderWidth: 3,
+            pointBackgroundColor: recoveryColors,
+            pointBorderColor: recoveryColors,
+            pointRadius: 8,
+            pointHoverRadius: 11,
+            fill: true,
+            tension: 0.3
+          },
+          {
+            label: 'Límite 12 meses',
+            data: Array(7).fill(12),
+            borderColor: '#e74c3c',
+            borderWidth: 2,
+            borderDash: [8, 4],
+            pointRadius: 0,
+            fill: false,
+            tension: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true, position: 'bottom' }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 20,
+            ticks: { callback: v => v + 'm' },
+            grid: { color: '#e1e4e8' }
+          },
+          x: { grid: { color: '#f0f0f0' } }
+        }
+      }
+    });
+
+    // Profit Chart
+    const profitColors = plans.map(p => {
+      if (p.tiers[2].utilidadNeta < 0) return '#e74c3c';
+      if (p.tiers[2].utilidadNeta > 200000) return '#27ae60';
+      return '#3498db';
+    });
+    new Chart(document.getElementById('profitChart'), {
+      type: 'line',
+      data: {
+        labels: planLabels,
+        datasets: [{
+          label: 'Utilidad Neta (Q)',
+          data: t3Data.map(t => +t.utilidadNeta.toFixed(0)),
+          borderColor: '#27ae60',
+          backgroundColor: 'rgba(39,174,96,0.1)',
+          borderWidth: 3,
+          pointBackgroundColor: profitColors,
+          pointBorderColor: profitColors,
+          pointRadius: 8,
+          pointHoverRadius: 11,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => 'Q ' + ctx.parsed.y.toLocaleString() } }
+        },
+        scales: {
+          y: {
+            ticks: { callback: v => 'Q ' + (v/1000).toFixed(0) + 'K' },
+            grid: { color: '#e1e4e8' }
+          },
+          x: { grid: { color: '#f0f0f0' } }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
